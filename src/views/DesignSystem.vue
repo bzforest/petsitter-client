@@ -1,12 +1,8 @@
-<script setup lang="ts">
-// พื้นที่ของ Best
-// ใน Vue 3 เราจะใช้ <script setup> เป็นหลักครับ มันช่วยให้เขียนโค้ดสั้นลงและอ่านง่ายขึ้น
-// เดี๋ยวเราจะทำการ Import component ต่างๆ ที่คุณเบสท์สร้าง มาไว้ตรงนี้ครับ
-// ตัวอย่าง:
-// import Navbar from '@/components/layout/Navbar.vue'
-// import InputField from '@/components/ui/InputField.vue'
-
-// พื้นที่ของ Foy
+<script>
+// Best
+import ColorPalette from '../components/ui/ColorPalette.vue'
+import TypographyShowcase from '../components/ui/TypographyShowcase.vue'
+// foy
 import Footer from "@/components/layout/Footer.vue";
 import Badge from "@/components/ui/Badge.vue";
 import Button from "@/components/ui/Button.vue";
@@ -42,7 +38,23 @@ import logoWhite from "../assets/logo/Property 1=white.png";
 </script>
 
 <template>
-  <!-- Best -->
+<!-- Best -->
+<div class="p-8 min-h-screen bg-brand-white">
+    <h1 class="display text-brand-orange-700 mb-12 text-center">Pet Sitter Design System</h1>
+
+    <section class="mb-16 p-6 border-b-2 border-brand-gray-300">
+
+        <div class="space-y-8">
+        <div class="mb-12">
+          <ColorPalette />
+          <TypographyShowcase />
+        </div>
+        </div>
+
+    </section>
+  </div>
+
+
 
   <!-- Foy -->
   <div class="min-h-screen flex flex-col bg-brand-gray-50">
