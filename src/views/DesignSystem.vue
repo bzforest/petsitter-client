@@ -1,7 +1,8 @@
-<script>
+<script setup lang="ts">
 // Best
 import ColorPalette from '../components/ui/ColorPalette.vue'
 import TypographyShowcase from '../components/ui/TypographyShowcase.vue'
+import InputShowcase from '../components/ui/InputShowcase.vue';
 // foy
 import Footer from "@/components/layout/Footer.vue";
 import Badge from "@/components/ui/Badge.vue";
@@ -18,6 +19,7 @@ import Badge from "@/components/ui/Badge.vue";
         <div class="mb-12">
           <ColorPalette />
           <TypographyShowcase />
+          <InputShowcase />
         </div>
         </div>
 
