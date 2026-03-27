@@ -42,6 +42,7 @@ import logoWhite from "../assets/logo/Property 1=white.png";
 // พื้นที่ของ Jab
 import BookingConfirm from "@/components/ui/BookingConfirm.vue";
 import RejectConfirmPopup from "@/components/ui/RejectConfirmPopup.vue";
+import ImageUpload from "@/components/ui/ImageUpload.vue";
 </script>
 
 <template>
@@ -471,17 +472,30 @@ import RejectConfirmPopup from "@/components/ui/RejectConfirmPopup.vue";
   </div>
 
   <!-- Jab Layout -->
-  <div class="min-h-screen flex flex-col bg-brand-gray-50">
-    <header class="flex items-center justify-between p-10">
-      <h1 class="headline-2">Jab Layout</h1>
-    </header>
-    <main class="grow p-10 space-y-10 flex flex-col items-center justify-center">
-      <BookingConfirm
-        message="Are you sure to booking this pet sitter?"
-        @confirm="() => { }" @cancel="() => { }" />
-      <RejectConfirmPopup
-        message="Are you sure to reject this pet sitter?"
-        reasonPlaceholder="Admin's suggestion here" @confirm="() => { }" @cancel="() => { }" />
-    </main>
-  </div>
+  <main class="min-h-screen bg-brand-gray-50 grid grid-cols-2 divide-x divide-brand-gray-100">
+    <!-- Confirmation Popup -->
+    <div class="flex flex-col">
+      <header class="flex flex-col p-5">
+        <h1 class="headline-4">Confirmation Popup</h1>
+      </header>
+      <main class="grow flex flex-col items-center justify-center space-y-10 p-10">
+        <BookingConfirm message="Are you sure to booking this pet sitter?" @confirm="() => { }" @cancel="() => { }" />
+        <RejectConfirmPopup message="Are you sure to reject this pet sitter?"
+          reasonPlaceholder="Admin's suggestion here" @confirm="() => { }" @cancel="() => { }" />
+      </main>
+    </div>
+
+    <!-- Image Upload -->
+    <div class="flex flex-col">
+      <header class="flex flex-col p-5">
+        <h1 class="headline-4">Image Upload</h1>
+      </header>
+      <main class="grow flex flex-col items-center justify-center space-y-10 p-10">
+        <ImageUpload />
+        <ImageUpload variant="circle" />
+      </main>
+    </div>
+  </main>
+
+
 </template>
