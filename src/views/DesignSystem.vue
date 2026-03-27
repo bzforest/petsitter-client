@@ -38,6 +38,10 @@ import elRingBlue from "../assets/Element Design/Group 25.png";
 // Logo Assets
 import logoBlack from "../assets/logo/Property 1=black.png";
 import logoWhite from "../assets/logo/Property 1=white.png";
+
+// พื้นที่ของ Jab
+import BookingConfirm from "@/components/ui/BookingConfirm.vue";
+import RejectConfirmPopup from "@/components/ui/RejectConfirmPopup.vue";
 </script>
 
 <template>
@@ -93,9 +97,7 @@ import logoWhite from "../assets/logo/Property 1=white.png";
               <h1 class="headline-2">Booking Status</h1>
             </div>
 
-            <div
-              class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-6"
-            >
+            <div class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-6">
               <Badge label="Waiting for confirm" color="pink" />
               <Badge label="Waiting for service" color="yellow" />
               <Badge label="In service" color="blue" />
@@ -108,9 +110,7 @@ import logoWhite from "../assets/logo/Property 1=white.png";
           <div class="space-y-16">
             <section class="space-y-6">
               <h2 class="headline-4 text-brand-gray-500">Pet Sitter Status</h2>
-              <div
-                class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-6"
-              >
+              <div class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-6">
                 <Badge label="Waiting for approve" color="pink" />
                 <Badge label="Approved" color="green" />
                 <Badge label="Rejected" color="red" />
@@ -119,9 +119,7 @@ import logoWhite from "../assets/logo/Property 1=white.png";
 
             <section class="space-y-6">
               <h2 class="headline-4 text-brand-gray-500">Pet OwnerStatus</h2>
-              <div
-                class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-6"
-              >
+              <div class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-6">
                 <Badge label="Normal" color="green" />
                 <Badge label="Baned" color="red" />
               </div>
@@ -131,9 +129,7 @@ import logoWhite from "../assets/logo/Property 1=white.png";
           <!-- Report Status (Column 3) -->
           <section class="space-y-6">
             <h2 class="headline-4 text-brand-gray-500">Report Status</h2>
-            <div
-              class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-6"
-            >
+            <div class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-6">
               <Badge label="New Report" color="pink" />
               <Badge label="Pending" color="blue" />
               <Badge label="Resolved" color="green" />
@@ -145,8 +141,7 @@ import logoWhite from "../assets/logo/Property 1=white.png";
           <section class="space-y-6">
             <h2 class="headline-4 text-brand-gray-500">Pet Type</h2>
             <div
-              class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] flex flex-col items-center space-y-6"
-            >
+              class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] flex flex-col items-center space-y-6">
               <Badge label="Dog" color="green" variant="pill" />
               <Badge label="Cat" color="pink" variant="pill" />
               <Badge label="Bird" color="blue" variant="pill" />
@@ -473,5 +468,20 @@ import logoWhite from "../assets/logo/Property 1=white.png";
     </main>
 
     <Footer />
+  </div>
+
+  <!-- Jab Layout -->
+  <div class="min-h-screen flex flex-col bg-brand-gray-50">
+    <header class="flex items-center justify-between p-10">
+      <h1 class="headline-2">Jab Layout</h1>
+    </header>
+    <main class="grow p-10 space-y-10 flex flex-col items-center justify-center">
+      <BookingConfirm
+        message="Are you sure to booking this pet sitter?"
+        @confirm="() => { }" @cancel="() => { }" />
+      <RejectConfirmPopup
+        message="Are you sure to reject this pet sitter?"
+        reasonPlaceholder="Admin's suggestion here" @confirm="() => { }" @cancel="() => { }" />
+    </main>
   </div>
 </template>
