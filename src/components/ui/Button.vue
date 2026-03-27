@@ -1,20 +1,16 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
 
-const props = defineProps({
-  variant: {
-    type: String,
-    default: 'primary',
-    // ตัวเลือก: primary, secondary, ghost, social, icon
-  },
-  disabled: {
-    type: Boolean,
-    default: false,
-  },
-  type: {
-    type: String,
-    default: 'button',
-  }
+interface Props {
+  variant?: 'primary' | 'secondary' | 'ghost' | 'social' | 'icon';
+  disabled?: boolean;
+  type?: 'button' | 'submit' | 'reset';
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  variant: 'primary',
+  disabled: false,
+  type: 'button'
 });
 
 // กำหนดสไตล์ตาม Variant สอดคล้องกับ Design System ในงานนี้
