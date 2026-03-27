@@ -3,6 +3,8 @@
 import ColorPalette from '../components/ui/ColorPalette.vue'
 import TypographyShowcase from '../components/ui/TypographyShowcase.vue'
 import InputShowcase from '../components/ui/InputShowcase.vue';
+import PaginationShowcase from '@/components/ui/PaginationShowcase.vue';
+import ReviewShowcase from '@/components/ui/ReviewShowcase.vue';
 // foy
 import Footer from "@/components/layout/Footer.vue";
 import Badge from "@/components/ui/Badge.vue";
@@ -50,6 +52,8 @@ import logoWhite from "../assets/logo/Property 1=white.png";
           <ColorPalette />
           <TypographyShowcase />
           <InputShowcase />
+          <PaginationShowcase />
+          <ReviewShowcase />
         </div>
         </div>
 
