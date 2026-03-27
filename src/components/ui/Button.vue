@@ -1,0 +1,75 @@
+<script setup>
+import { computed } from 'vue';
+
+const props = defineProps({
+  variant: {
+    type: String,
+    default: 'primary',
+    // ตัวเลือก: primary, secondary, ghost, social, icon
+  },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
+  type: {
+    type: String,
+    default: 'button',
+  }
+});
+
+// กำหนดสไตล์ตาม Variant สอดคล้องกับ Design System ในงานนี้
+const variantClasses = {
+  // Primary เปลี่ยนสีพื้นหลังตามสถานะ
+  primary: 'bg-brand-orange-700 text-white hover:bg-brand-orange-500 active:bg-brand-orange-900 shadow-sm',
+  
+  // Secondary/Ghost/Icon ปรับเฉพาะสี Font เมื่อ Hover/Active (พื้นหลังคงที่)
+  secondary: 'bg-brand-orange-50 text-brand-orange-700 hover:text-brand-orange-500 active:text-brand-orange-900 transition-colors duration-200',
+  ghost: 'bg-transparent text-brand-orange-700 hover:text-brand-orange-500 active:text-brand-orange-900 transition-colors duration-200',
+  icon: 'bg-brand-orange-50 text-brand-orange-700 hover:text-brand-orange-500 active:text-brand-orange-900 transition-colors duration-200',
+  
+  // Social (ค่าคงที่เดิม)
+  social: 'bg-[#F0F2F5] text-[#1C1E21] hover:bg-[#E4E6EB] active:bg-[#D8DADF]',
+};
+
+// สไตล์เมื่อ Disabled (จาก Design System)
+const disabledClasses = 'bg-brand-gray-100/50 text-brand-gray-300 cursor-not-allowed pointer-events-none border-none';
+
+const buttonClasses = computed(() => {
+  const base = 'inline-flex items-center justify-center transition-all duration-200 active:scale-95 font-bold body-2 whitespace-nowrap outline-none';
+  
+  // จัดรูปทรง
+  const shape = props.variant === 'icon' 
+    ? 'w-12 h-12 rounded-full p-0 flex' 
+    : 'px-6 py-3 rounded-[16px] gap-2.5';
+    
+  const style = props.disabled ? disabledClasses : variantClasses[props.variant];
+  
+  return [base, shape, style].join(' ');
+});
+</script>
+
+<template>
+  <button 
+    :type="type" 
+    :class="buttonClasses" 
+    :disabled="disabled"
+  >
+    <!-- Left Icon Slot (ใส่ไอคอนจาก Lucide หรืออื่นๆ) -->
+    <div v-if="$slots['left-icon']" class="flex items-center justify-center transition-transform shrink-0">
+      <slot name="left-icon"></slot>
+    </div>
+    
+    <!-- Content Slot (ข้อความหรือเนื้อหาอื่นๆ) -->
+    <span v-if="variant !== 'icon'" class="flex items-center">
+      <slot></slot>
+    </span>
+
+    <!-- Default Slot for Icon Variant -->
+    <slot v-if="variant === 'icon'"></slot>
+
+    <!-- Right Icon Slot -->
+    <div v-if="$slots['right-icon']" class="flex items-center justify-center transition-transform shrink-0">
+      <slot name="right-icon"></slot>
+    </div>
+  </button>
+</template>
