@@ -5,6 +5,7 @@ import TypographyShowcase from '../components/ui/TypographyShowcase.vue'
 import InputShowcase from '../components/ui/InputShowcase.vue';
 import PaginationShowcase from '@/components/ui/PaginationShowcase.vue';
 import ReviewShowcase from '@/components/ui/ReviewShowcase.vue';
+import BookingCardShowcase from '@/components/ui/BookingCardShowcase.vue';
 // foy
 import Footer from "@/components/layout/Footer.vue";
 import Badge from "@/components/ui/Badge.vue";
@@ -55,11 +56,11 @@ const steps = [
 </script>
 
 <template>
-  <!-- Best -->
-  <div class="p-8 min-h-screen bg-brand-white">
+<!-- Best -->
+<div class="p-1 xl:p-8 min-h-screen bg-brand-white">
     <h1 class="display text-brand-orange-700 mb-12 text-center">Pet Sitter Design System</h1>
 
-    <section class="mb-16 p-6 border-b-2 border-brand-gray-300">
+    <section class="mb-16 p-2 border-b-2 border-brand-gray-300">
 
       <div class="space-y-8">
         <div class="mb-12">
@@ -68,6 +69,7 @@ const steps = [
           <InputShowcase />
           <PaginationShowcase />
           <ReviewShowcase />
+          <BookingCardShowcase />
         </div>
       </div>
 
