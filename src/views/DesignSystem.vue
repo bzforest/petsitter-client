@@ -43,6 +43,16 @@ import logoWhite from "../assets/logo/Property 1=white.png";
 import BookingConfirm from "@/components/ui/BookingConfirm.vue";
 import RejectConfirmPopup from "@/components/ui/RejectConfirmPopup.vue";
 import ImageUpload from "@/components/ui/ImageUpload.vue";
+import ProgressBar from "@/components/ui/ProgressBar.vue";
+import ProgressStep from "@/components/ui/ProgressStep.vue";
+import { ref } from 'vue';
+
+const currentStep = ref(1)
+const steps = [
+  { label: 'Your Pet' },
+  { label: 'Information' },
+  { label: 'Payment' },
+]
 </script>
 
 <template>
@@ -493,6 +503,29 @@ import ImageUpload from "@/components/ui/ImageUpload.vue";
       <main class="grow flex flex-col items-center justify-center space-y-10 p-10">
         <ImageUpload />
         <ImageUpload variant="circle" />
+      </main>
+    </div>
+
+    <!-- Progress Step -->
+    <div class="flex flex-col">
+      <header class="flex flex-col p-5">
+        <h1 class="headline-4">Progress Step</h1>
+      </header>
+      <main class="grow flex flex-col items-center justify-center space-y-10 p-10">
+        <!-- ProgressBar -->
+        <ProgressBar :currentStep="currentStep" :steps="steps" />
+
+        <!-- ปุ่มทดสอบ -->
+        <div class="flex gap-4">
+          <button @click="currentStep--" :disabled="currentStep <= 1"
+            class="px-4 py-2 rounded-full bg-brand-gray-100 text-brand-gray-700 body-3 disabled:opacity-40">
+            Back
+          </button>
+          <button @click="currentStep++" :disabled="currentStep >= steps.length"
+            class="px-4 py-2 rounded-full bg-brand-orange-700 text-white body-3 disabled:opacity-40">
+            Next
+          </button>
+        </div>
       </main>
     </div>
   </main>
