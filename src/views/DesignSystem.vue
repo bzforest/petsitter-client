@@ -6,6 +6,9 @@ import InputShowcase from '../components/ui/InputShowcase.vue';
 import PaginationShowcase from '@/components/ui/PaginationShowcase.vue';
 import ReviewShowcase from '@/components/ui/ReviewShowcase.vue';
 import BookingCardShowcase from '@/components/ui/BookingCardShowcase.vue';
+import ChatListShowcase from '@/components/ui/ChatListShowcase.vue';
+import ChatBubbleShowcase from '@/components/ui/ChatBubbleShowcase.vue';
+import ChatInputShowcase from '@/components/ui/ChatInputShowcase.vue';
 // foy
 import Footer from "@/components/layout/Footer.vue";
 import Badge from "@/components/ui/Badge.vue";
@@ -93,6 +96,9 @@ const steps = [
           <PaginationShowcase />
           <ReviewShowcase />
           <BookingCardShowcase />
+          <ChatListShowcase />
+          <ChatBubbleShowcase />
+          <ChatInputShowcase />
         </div>
       </div>
 
