@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from "@/components/ui/Button.vue";
 defineProps<{
     title?: string
     message: string
@@ -34,14 +35,14 @@ defineEmits<{
         </div>
 
         <div class="flex items-center justify-between mt-2">
-            <button @click="$emit('cancel')"
-                class="px-6 py-2 rounded-full bg-brand-orange-50 text-brand-orange-700 body-2 font-bold hover:bg-brand-orange-100">
+            <Button @click="$emit('cancel')"
+                variant="secondary">
                 Cancel
-            </button>
-            <button @click="$emit('confirm')"
-                class="px-6 py-2 rounded-full bg-orange-500 text-brand-white body-2 font-bold hover:bg-brand-orange-900">
+            </Button>
+            <Button @click="$emit('confirm')"
+                variant="primary">
                 {{ confirmLabel ?? 'Reject' }}
-            </button>
+            </Button>
         </div>
 
     </div>
