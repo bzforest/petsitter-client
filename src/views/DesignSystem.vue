@@ -38,16 +38,30 @@ import elRingBlue from "../assets/Element Design/Group 25.png";
 // Logo Assets
 import logoBlack from "../assets/logo/Property 1=black.png";
 import logoWhite from "../assets/logo/Property 1=white.png";
+
+// พื้นที่ของ Jab
+import BookingConfirm from "@/components/ui/BookingConfirm.vue";
+import RejectConfirmPopup from "@/components/ui/RejectConfirmPopup.vue";
+import ImageUpload from "@/components/ui/ImageUpload.vue";
+import ProgressBar from "@/components/ui/ProgressBar.vue";
+import Navbar from "@/components/layout/Navbar.vue";
+
+const currentStep = ref(1)
+const steps = [
+  { label: 'Your Pet' },
+  { label: 'Information' },
+  { label: 'Payment' },
+]
 </script>
 
 <template>
-<!-- Best -->
-<div class="p-8 min-h-screen bg-brand-white">
+  <!-- Best -->
+  <div class="p-8 min-h-screen bg-brand-white">
     <h1 class="display text-brand-orange-700 mb-12 text-center">Pet Sitter Design System</h1>
 
     <section class="mb-16 p-6 border-b-2 border-brand-gray-300">
 
-        <div class="space-y-8">
+      <div class="space-y-8">
         <div class="mb-12">
           <ColorPalette />
           <TypographyShowcase />
@@ -55,7 +69,7 @@ import logoWhite from "../assets/logo/Property 1=white.png";
           <PaginationShowcase />
           <ReviewShowcase />
         </div>
-        </div>
+      </div>
 
     </section>
   </div>
@@ -70,7 +84,8 @@ import logoWhite from "../assets/logo/Property 1=white.png";
         <!-- Logo Section First -->
         <section class="mb-16">
           <h1 class="headline-1 mb-8">Logo</h1>
-          <div class="p-10 border-2 border-dashed border-purple-200 rounded-[32px] w-fit flex flex-col items-center gap-10 bg-white shadow-sm">
+          <div
+            class="p-10 border-2 border-dashed border-purple-200 rounded-[32px] w-fit flex flex-col items-center gap-10 bg-white shadow-sm">
             <!-- Full / Black Logo -->
             <div class="flex flex-col items-center gap-2">
               <span class="text-xs text-brand-gray-300"></span>
@@ -93,9 +108,7 @@ import logoWhite from "../assets/logo/Property 1=white.png";
               <h1 class="headline-2">Booking Status</h1>
             </div>
 
-            <div
-              class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-6"
-            >
+            <div class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-6">
               <Badge label="Waiting for confirm" color="pink" />
               <Badge label="Waiting for service" color="yellow" />
               <Badge label="In service" color="blue" />
@@ -108,9 +121,7 @@ import logoWhite from "../assets/logo/Property 1=white.png";
           <div class="space-y-16">
             <section class="space-y-6">
               <h2 class="headline-4 text-brand-gray-500">Pet Sitter Status</h2>
-              <div
-                class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-6"
-              >
+              <div class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-6">
                 <Badge label="Waiting for approve" color="pink" />
                 <Badge label="Approved" color="green" />
                 <Badge label="Rejected" color="red" />
@@ -119,9 +130,7 @@ import logoWhite from "../assets/logo/Property 1=white.png";
 
             <section class="space-y-6">
               <h2 class="headline-4 text-brand-gray-500">Pet OwnerStatus</h2>
-              <div
-                class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-6"
-              >
+              <div class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-6">
                 <Badge label="Normal" color="green" />
                 <Badge label="Baned" color="red" />
               </div>
@@ -131,9 +140,7 @@ import logoWhite from "../assets/logo/Property 1=white.png";
           <!-- Report Status (Column 3) -->
           <section class="space-y-6">
             <h2 class="headline-4 text-brand-gray-500">Report Status</h2>
-            <div
-              class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-6"
-            >
+            <div class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-6">
               <Badge label="New Report" color="pink" />
               <Badge label="Pending" color="blue" />
               <Badge label="Resolved" color="green" />
@@ -145,8 +152,7 @@ import logoWhite from "../assets/logo/Property 1=white.png";
           <section class="space-y-6">
             <h2 class="headline-4 text-brand-gray-500">Pet Type</h2>
             <div
-              class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] flex flex-col items-center space-y-6"
-            >
+              class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] flex flex-col items-center space-y-6">
               <Badge label="Dog" color="green" variant="pill" />
               <Badge label="Cat" color="pink" variant="pill" />
               <Badge label="Bird" color="blue" variant="pill" />
@@ -159,9 +165,7 @@ import logoWhite from "../assets/logo/Property 1=white.png";
         <div class="mt-16 w-full">
           <h1 class="headline-2 mb-12">Buttons</h1>
 
-          <div
-            class="p-12 border-2 border-dashed border-purple-200 rounded-[40px]"
-          >
+          <div class="p-12 border-2 border-dashed border-purple-200 rounded-[40px]">
             <div class="grid grid-cols-5 gap-y-12 items-center">
               <!-- Headers -->
               <div class="text-brand-gray-300 font-bold headline-3 text-center">
@@ -184,43 +188,41 @@ import logoWhite from "../assets/logo/Property 1=white.png";
               <div class="flex flex-col items-center gap-2">
                 <span class="text-brand-gray-300 text-sm">Normal</span>
                 <Button variant="primary">
-                  <template #left-icon><SquarePen :size="20" /></template>
+                  <template #left-icon>
+                    <SquarePen :size="20" />
+                  </template>
                   Primary
                 </Button>
               </div>
               <div class="flex flex-col items-center gap-2">
-                <span class="text-brand-gray-300 text-sm invisible"
-                  >Normal</span
-                >
+                <span class="text-brand-gray-300 text-sm invisible">Normal</span>
                 <Button variant="secondary">
-                  <template #left-icon><SquarePen :size="20" /></template>
+                  <template #left-icon>
+                    <SquarePen :size="20" />
+                  </template>
                   Primary
                 </Button>
               </div>
               <div class="flex flex-col items-center gap-2">
-                <span class="text-brand-gray-300 text-sm invisible"
-                  >Normal</span
-                >
+                <span class="text-brand-gray-300 text-sm invisible">Normal</span>
                 <Button variant="ghost">
-                  <template #left-icon><SquarePen :size="20" /></template>
+                  <template #left-icon>
+                    <SquarePen :size="20" />
+                  </template>
                   Primary
                 </Button>
               </div>
               <div class="flex flex-col items-center gap-2">
-                <span class="text-brand-gray-300 text-sm invisible"
-                  >Normal</span
-                >
+                <span class="text-brand-gray-300 text-sm invisible">Normal</span>
                 <Button variant="social">
-                  <template #left-icon
-                    ><Facebook :size="20" fill="#1877F2" color="#1877F2"
-                  /></template>
+                  <template #left-icon>
+                    <Facebook :size="20" fill="#1877F2" color="#1877F2" />
+                  </template>
                   Facebook
                 </Button>
               </div>
               <div class="flex flex-col items-center gap-2">
-                <span class="text-brand-gray-300 text-sm invisible"
-                  >Normal</span
-                >
+                <span class="text-brand-gray-300 text-sm invisible">Normal</span>
                 <Button variant="icon">
                   <SquarePen :size="24" />
                 </Button>
@@ -230,41 +232,41 @@ import logoWhite from "../assets/logo/Property 1=white.png";
               <div class="flex flex-col items-center gap-2">
                 <span class="text-brand-gray-300 text-sm">Disabled</span>
                 <Button variant="primary" disabled>
-                  <template #left-icon><SquarePen :size="20" /></template>
+                  <template #left-icon>
+                    <SquarePen :size="20" />
+                  </template>
                   Primary
                 </Button>
               </div>
               <div class="flex flex-col items-center gap-2">
-                <span class="text-brand-gray-300 text-sm invisible"
-                  >Disabled</span
-                >
+                <span class="text-brand-gray-300 text-sm invisible">Disabled</span>
                 <Button variant="secondary" disabled>
-                  <template #left-icon><SquarePen :size="20" /></template>
+                  <template #left-icon>
+                    <SquarePen :size="20" />
+                  </template>
                   Primary
                 </Button>
               </div>
               <div class="flex flex-col items-center gap-2">
-                <span class="text-brand-gray-300 text-sm invisible"
-                  >Disabled</span
-                >
+                <span class="text-brand-gray-300 text-sm invisible">Disabled</span>
                 <Button variant="ghost" disabled>
-                  <template #left-icon><SquarePen :size="20" /></template>
+                  <template #left-icon>
+                    <SquarePen :size="20" />
+                  </template>
                   Primary
                 </Button>
               </div>
               <div class="flex flex-col items-center gap-2">
-                <span class="text-brand-gray-300 text-sm invisible"
-                  >Disabled</span
-                >
+                <span class="text-brand-gray-300 text-sm invisible">Disabled</span>
                 <Button variant="social" disabled>
-                  <template #left-icon><Facebook :size="20" /></template>
+                  <template #left-icon>
+                    <Facebook :size="20" />
+                  </template>
                   Facebook
                 </Button>
               </div>
               <div class="flex flex-col items-center gap-2">
-                <span class="text-brand-gray-300 text-sm invisible"
-                  >Disabled</span
-                >
+                <span class="text-brand-gray-300 text-sm invisible">Disabled</span>
                 <Button variant="icon" disabled>
                   <SquarePen :size="24" />
                 </Button>
@@ -276,9 +278,7 @@ import logoWhite from "../assets/logo/Property 1=white.png";
         <div class="mt-16 w-full">
           <h1 class="headline-2 mb-12">Selection</h1>
 
-          <div
-            class="p-12 border-2 border-dashed border-purple-200 rounded-[40px] bg-[#FAFAFA]/50"
-          >
+          <div class="p-12 border-2 border-dashed border-purple-200 rounded-[40px] bg-[#FAFAFA]/50">
             <div class="flex flex-wrap gap-16 justify-between">
               <!-- 1. Checkbox - Radio -->
               <div class="space-y-10 min-w-[300px]">
@@ -286,51 +286,18 @@ import logoWhite from "../assets/logo/Property 1=white.png";
                 <div class="flex gap-6">
                   <!-- Checkboxes -->
                   <div
-                    class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-5 flex flex-col bg-white min-w-[140px]"
-                  >
-                    <Checkbox
-                      label="Default"
-                      v-model="checkboxDemo"
-                      value="Default"
-                    />
-                    <Checkbox
-                      label="Hover"
-                      v-model="checkboxDemo"
-                      value="Hover"
-                      class="border-brand-orange-300"
-                    />
-                    <Checkbox
-                      label="Checked"
-                      v-model="checkboxDemo"
-                      value="Checked"
-                    />
-                    <Checkbox
-                      label="Disable"
-                      v-model="checkboxDemo"
-                      value="Disable"
-                      disabled
-                    />
+                    class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-5 flex flex-col bg-white min-w-[140px]">
+                    <Checkbox label="Default" v-model="checkboxDemo" value="Default" />
+                    <Checkbox label="Hover" v-model="checkboxDemo" value="Hover" class="border-brand-orange-300" />
+                    <Checkbox label="Checked" v-model="checkboxDemo" value="Checked" />
+                    <Checkbox label="Disable" v-model="checkboxDemo" value="Disable" disabled />
                   </div>
                   <!-- Radios -->
                   <div
-                    class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-5 flex flex-col bg-white min-w-[140px]"
-                  >
-                    <Radio
-                      label="Default"
-                      value="Default"
-                      v-model="radioDemo"
-                    />
-                    <Radio
-                      label="Hover"
-                      value="Hover"
-                      v-model="radioDemo"
-                      class="border-brand-orange-300"
-                    />
-                    <Radio
-                      label="Checked"
-                      value="Checked"
-                      v-model="radioDemo"
-                    />
+                    class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-5 flex flex-col bg-white min-w-[140px]">
+                    <Radio label="Default" value="Default" v-model="radioDemo" />
+                    <Radio label="Hover" value="Hover" v-model="radioDemo" class="border-brand-orange-300" />
+                    <Radio label="Checked" value="Checked" v-model="radioDemo" />
                     <Radio label="Disable" value="Disable" disabled />
                   </div>
                 </div>
@@ -340,29 +307,20 @@ import logoWhite from "../assets/logo/Property 1=white.png";
               <div class="space-y-10 min-w-[240px]">
                 <h2 class="headline-3 text-brand-gray-300">Rating Selection</h2>
                 <div
-                  class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-8 flex flex-col items-center bg-white h-fit justify-center"
-                >
+                  class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] space-y-8 flex flex-col items-center bg-white h-fit justify-center">
                   <!-- Static Choices -->
                   <div class="space-y-4 flex flex-col items-center">
-                    <span class="text-brand-gray-300 text-sm"
-                      >Static Selection</span
-                    >
+                    <span class="text-brand-gray-300 text-sm">Static Selection</span>
                     <RatingSelection :rating="5" v-model="ratingDemo" />
                     <RatingSelection :rating="4" v-model="ratingDemo" />
                     <RatingSelection :rating="3" v-model="ratingDemo" />
                   </div>
 
                   <!-- NEW: Interactive Rating Input -->
-                  <div
-                    class="pt-6 border-t border-brand-gray-50 flex flex-col items-center gap-4"
-                  >
-                    <span class="text-brand-gray-300 text-sm"
-                      >Interactive Rating Input</span
-                    >
+                  <div class="pt-6 border-t border-brand-gray-50 flex flex-col items-center gap-4">
+                    <span class="text-brand-gray-300 text-sm">Interactive Rating Input</span>
                     <RatingInput v-model="interactiveRatingDemo" />
-                    <span class="headline-4 text-brand-gray-500"
-                      >Current: {{ interactiveRatingDemo }}</span
-                    >
+                    <span class="headline-4 text-brand-gray-500">Current: {{ interactiveRatingDemo }}</span>
                   </div>
                 </div>
               </div>
@@ -371,8 +329,7 @@ import logoWhite from "../assets/logo/Property 1=white.png";
               <div class="space-y-10 min-w-[200px]">
                 <h2 class="headline-3 text-brand-gray-300">Pin Selection</h2>
                 <div
-                  class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] flex items-center justify-center gap-12 bg-white h-fit min-h-[200px]"
-                >
+                  class="p-8 border-2 border-dashed border-purple-200 rounded-[32px] flex items-center justify-center gap-12 bg-white h-fit min-h-[200px]">
                   <PinSelection :value="1" v-model="pinDemo" />
                   <PinSelection :value="2" v-model="pinDemo" />
                 </div>
@@ -385,26 +342,10 @@ import logoWhite from "../assets/logo/Property 1=white.png";
                 </h2>
 
                 <div
-                  class="p-10 border-2 border-dashed border-purple-200 rounded-[27px] bg-white h-fit flex flex-col items-center justify-center gap-6"
-                >
-                  <PaymentSelection
-                    label="Cash"
-                    value="cash"
-                    v-model="paymentDemo"
-                    icon="card"
-                  />
-                  <PaymentSelection
-                    label="Cash"
-                    value="card"
-                    v-model="paymentDemo"
-                    icon="card"
-                  />
-                  <PaymentSelection
-                    label="Cash"
-                    value="none"
-                    v-model="paymentDemo"
-                    icon="card"
-                  />
+                  class="p-10 border-2 border-dashed border-purple-200 rounded-[27px] bg-white h-fit flex flex-col items-center justify-center gap-6">
+                  <PaymentSelection label="Cash" value="cash" v-model="paymentDemo" icon="card" />
+                  <PaymentSelection label="Cash" value="card" v-model="paymentDemo" icon="card" />
+                  <PaymentSelection label="Cash" value="none" v-model="paymentDemo" icon="card" />
                 </div>
               </div>
             </div>
@@ -414,58 +355,29 @@ import logoWhite from "../assets/logo/Property 1=white.png";
         <div class="mt-16 w-full">
           <h1 class="headline-2 mb-12">Element Design</h1>
           <div
-            class="p-20 border-2 border-dashed border-purple-200 rounded-[40px] bg-white min-h-[600px] flex items-center justify-center overflow-hidden relative"
-          >
+            class="p-20 border-2 border-dashed border-purple-200 rounded-[40px] bg-white min-h-[600px] flex items-center justify-center overflow-hidden relative">
             <!-- Composition Container -->
             <div class="relative w-[900px] h-[500px]">
               <!-- Yellow Arc (Top Left) -->
-              <img
-                :src="elArcYellow"
-                class="absolute top-20 left-[5%] w-32 h-32 object-contain"
-                alt="Yellow Arc"
-              />
+              <img :src="elArcYellow" class="absolute top-20 left-[5%] w-32 h-32 object-contain" alt="Yellow Arc" />
               <!-- Green Star (Top Center-ish) -->
-              <img
-                :src="elStarGreen"
-                class="absolute top-15 left-[25%] w-40 h-40 object-contain rotate-[-10deg]"
-                alt="Green Star"
-              />
+              <img :src="elStarGreen" class="absolute top-15 left-[25%] w-40 h-40 object-contain rotate-[-10deg]"
+                alt="Green Star" />
               <!-- Pink Paw (Top Center) -->
-              <img
-                :src="elPawPink"
-                class="absolute top-0 left-[50%] w-36 h-36 object-contain"
-                alt="Pink Paw"
-              />
+              <img :src="elPawPink" class="absolute top-0 left-[50%] w-36 h-36 object-contain" alt="Pink Paw" />
               <!-- Green Slice (Top Right) -->
-              <img
-                :src="elSliceGreen"
-                class="absolute top-[-20px] right-[5%] w-48 h-48 object-contain"
-                alt="Green Slice"
-              />
+              <img :src="elSliceGreen" class="absolute top-[-20px] right-[5%] w-48 h-48 object-contain"
+                alt="Green Slice" />
               <!-- Pill Dots (Center-ish) -->
-              <img
-                :src="elDotsPill"
-                class="absolute top-[230px] right-[32%] w-16 h-8 object-contain opacity-80"
-                alt="Pill Dots"
-              />
+              <img :src="elDotsPill" class="absolute top-[230px] right-[32%] w-16 h-8 object-contain opacity-80"
+                alt="Pill Dots" />
               <!-- Blue Rainbow (Bottom Left) -->
-              <img
-                :src="elRainbowBlue"
-                class="absolute bottom-0 left-0 w-72 h-36 object-contain"
-                alt="Blue Rainbow"
-              />
+              <img :src="elRainbowBlue" class="absolute bottom-0 left-0 w-72 h-36 object-contain" alt="Blue Rainbow" />
               <!-- Yellow Circle (Bottom Center) -->
-              <img
-                :src="elCircleYellow"
-                class="absolute bottom-[-10px] left-[38%] w-52 h-52 object-contain"
-                alt="Yellow Circle"
-              />
+              <img :src="elCircleYellow" class="absolute bottom-[-10px] left-[38%] w-52 h-52 object-contain"
+                alt="Yellow Circle" />
               <!-- Blue Ring Shape (Bottom Right) -->
-              <img
-                :src="elRingBlue"
-                class="absolute bottom-0 right-0 w-56 h-56 object-contain"
-                alt="Blue Ring"
-              />
+              <img :src="elRingBlue" class="absolute bottom-0 right-0 w-56 h-56 object-contain" alt="Blue Ring" />
             </div>
           </div>
         </div>
@@ -473,5 +385,60 @@ import logoWhite from "../assets/logo/Property 1=white.png";
     </main>
 
     <Footer />
+  </div>
+
+  <!-- Jab Layout -->
+  <div class="min-h-screen flex flex-col bg-brand-gray-50">
+    <h1 class="headline-4 p-5">1. Navigation Bar</h1>
+
+    <!-- Navbar อยู่บนสุด -->
+    <Navbar />
+    <!-- Grid Content -->
+    <main class="flex-1 grid grid-cols-2 divide-x divide-brand-gray-100">
+
+      <!-- Confirmation Popup -->
+      <div class="flex flex-col">
+        <header class="flex flex-col p-5">
+          <h1 class="headline-4">2. Confirmation Popup</h1>
+        </header>
+        <main class="grow flex flex-col items-center justify-center space-y-10 p-10">
+          <BookingConfirm message="Are you sure to booking this pet sitter?" @confirm="() => { }" @cancel="() => { }" />
+          <RejectConfirmPopup message="Are you sure to reject this pet sitter?"
+            reasonPlaceholder="Admin's suggestion here" @confirm="() => { }" @cancel="() => { }" />
+        </main>
+      </div>
+
+      <!-- Image Upload -->
+      <div class="flex flex-col">
+        <header class="flex flex-col p-5">
+          <h1 class="headline-4">3. Image Upload</h1>
+        </header>
+        <main class="grow flex flex-col items-center justify-center space-y-10 p-10">
+          <ImageUpload />
+          <ImageUpload variant="circle" />
+        </main>
+      </div>
+
+      <!-- Progress Step -->
+      <div class="flex flex-col col-span-2">
+        <header class="flex flex-col p-5">
+          <h1 class="headline-4">4. Progress Step</h1>
+        </header>
+        <main class="grow flex flex-col items-center justify-center space-y-10 p-10">
+          <ProgressBar :currentStep="currentStep" :steps="steps" />
+          <div class="flex gap-4">
+            <button @click="currentStep--" :disabled="currentStep <= 1"
+              class="px-4 py-2 rounded-full bg-brand-gray-100 text-brand-gray-700 body-3 disabled:opacity-40">
+              Back
+            </button>
+            <button @click="currentStep++" :disabled="currentStep >= steps.length"
+              class="px-4 py-2 rounded-full bg-brand-orange-700 text-white body-3 disabled:opacity-40">
+              Next
+            </button>
+          </div>
+        </main>
+      </div>
+
+    </main>
   </div>
 </template>
