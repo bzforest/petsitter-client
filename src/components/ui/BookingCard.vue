@@ -60,20 +60,20 @@ const badgeProps = computed(() => {
   
       <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6">
         
-        <div class="flex flex-col gap-1 md:col-span-6">
+        <div class="flex flex-col gap-1 md:col-span-6 border-r-2 border-brand-gray-100">
           <span class="body-3 text-brand-gray-500">Date & Time:</span>
           
           <div class="flex items-center gap-2 flex-nowrap">
             <span class="body-2 text-brand-gray-900 font-bold whitespace-nowrap">{{ bookingDate }} | {{ bookingTime }}</span>
             
-            <button v-if="status === 'waiting'" class="flex items-center gap-1 text-brand-orange-700 hover:text-brand-orange-500 transition-colors shrink-0">
+            <button v-if="status === 'waiting'" class="flex items-center gap-1 text-brand-orange-700 hover:text-brand-orange-500 transition-colors shrink-0 cursor-pointer">
               <SquarePen class="w-4 h-4" />
               <span class="body-3 font-bold">Change</span>
             </button>
           </div>
         </div>
   
-        <div class="flex flex-col gap-1 md:col-span-3">
+        <div class="flex flex-col gap-1 md:col-span-3 border-r-2 border-brand-gray-100">
           <span class="body-3 text-brand-gray-500">Duration:</span>
           <span class="body-2 text-brand-gray-900 font-bold truncate">{{ duration }}</span>
         </div>
@@ -94,8 +94,8 @@ const badgeProps = computed(() => {
       </span>
       
       <div class="flex flex-row items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
-        <Button variant="primary" class="flex-1 md:flex-none">Send Message</Button>
-        <Button variant="icon" class="shrink-0">
+        <Button variant="primary" class="flex-1 md:flex-none cursor-pointer">Send Message</Button>
+        <Button variant="icon" class="shrink-0 cursor-pointer">
           <Phone class="w-5 h-5" />
         </Button>
       </div>
@@ -112,19 +112,19 @@ const badgeProps = computed(() => {
       
       <div class="flex flex-row items-center justify-end gap-2 w-full md:w-auto mt-2 md:mt-0">
         
-        <button class="body-3 font-bold text-brand-orange-700 hover:text-brand-orange-500 transition-colors px-2 whitespace-nowrap shrink-0">
+        <button class="body-3 font-bold text-brand-orange-700 hover:text-brand-orange-500 transition-colors px-2 whitespace-nowrap shrink-0 cursor-pointer">
           Report
         </button>
         
         <Button 
           :variant="isReviewed ? 'secondary' : 'primary'" 
-          class="flex-1 md:flex-none"
+          class="flex-1 md:flex-none cursor-pointer"
         >
           {{ isReviewed ? 'Your Review' : 'Review' }}
         </Button>
 
         <Button variant="icon" class="shrink-0">
-          <Phone class="w-5 h-5" />
+          <Phone class="w-5 h-5 cursor-pointer" />
         </Button>
       </div>
     </div>
