@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Phone, PhoneCall, SquarePen } from 'lucide-vue-next'
+import { Phone, SquarePen } from 'lucide-vue-next'
 import Badge from './Badge.vue'
 import Button from './Button.vue'
 
