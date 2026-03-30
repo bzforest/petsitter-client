@@ -16,7 +16,13 @@ import RatingSelection from "@/components/ui/RatingSelection.vue";
 import RatingInput from "@/components/ui/RatingInput.vue";
 import PinSelection from "@/components/ui/PinSelection.vue";
 import PaymentSelection from "@/components/ui/PaymentSelection.vue";
+import Petcard from "@/components/ui/Petcard.vue";
+import PetSitterCardLarge from "@/components/ui/PetSitterCardLarge.vue";
+import PetSitterCardSmall from "@/components/ui/PetSitterCardSmall.vue";
 import { ref } from "vue";
+
+
+
 import { SquarePen, Facebook } from "lucide-vue-next";
 
 const checkboxDemo = ref(["Checked"]);
@@ -25,6 +31,17 @@ const ratingDemo = ref(5);
 const interactiveRatingDemo = ref(3);
 const pinDemo = ref(2);
 const paymentDemo = ref("cash");
+const petSelect1 = ref(false);
+const petSelect2 = ref(true);
+
+const largeCardSelected = ref(false);
+const largeCardSelected2 = ref(true);
+const largeCardMobileSelected = ref(false);
+const smallCardSelected = ref(false);
+const smallCardMobileSelected = ref(false);
+
+
+
 
 // Element Design Assets
 import elArcYellow from "../assets/Element Design/Ellipse 14.png";
@@ -40,6 +57,11 @@ import elRingBlue from "../assets/Element Design/Group 25.png";
 import logoBlack from "../assets/logo/Property 1=black.png";
 import logoWhite from "../assets/logo/Property 1=white.png";
 
+// Pet Image
+import mrHamImg from "../assets/mr_ham_cat.png";
+import houseImg from "../assets/happy_house.png";
+import personImg from "../assets/jane_maison.png";
+
 // พื้นที่ของ Jab
 import BookingConfirm from "@/components/ui/BookingConfirm.vue";
 import RejectConfirmPopup from "@/components/ui/RejectConfirmPopup.vue";
@@ -54,6 +76,8 @@ const steps = [
   { label: 'Payment' },
 ]
 </script>
+
+
 
 <template>
 <!-- Best -->
@@ -79,11 +103,61 @@ const steps = [
 
 
   <!-- Foy -->
-  <div class="min-h-screen flex flex-col bg-brand-gray-50">
-    <!-- CENTER CONTAINER -->
+  <div class="min-h-screen flex flex-col bg-brand-gray-50 pb-20">
+    <!-- Pet Card Section -->
     <main class="flex-grow flex items-center justify-center p-10 pt-20">
       <div class="w-full max-w-6xl bg-white rounded-[40px] shadow-sm p-16">
+        <section class="mb-16">
+          <h1 class="headline-2 mb-12">Pet Card</h1>
+          <div class="p-12 border-2 border-dashed border-brand-orange-100 rounded-[40px] bg-brand-orange-50/20">
+            <div class="flex flex-wrap gap-8 justify-center">
+              <!-- Type 1: Selectable (Unselected & Selected) -->
+              <div class="flex flex-col items-center gap-4">
+                <span class="text-brand-gray-300 body-3">Selectable (Unselected & Selected)</span>
+                <div class="flex gap-4">
+                  <Petcard 
+                    name="Mr. Ham" 
+                    type="Cat" 
+                    :image="mrHamImg" 
+                    selectable 
+                    v-model="petSelect1" 
+                  />
+                  <Petcard 
+                    name="Mr. Ham" 
+                    type="Cat" 
+                    :image="mrHamImg" 
+                    selectable 
+                    v-model="petSelect2" 
+                  />
+                </div>
+              </div>
+
+              <!-- Type 2: Disabled -->
+              <div class="flex flex-col items-center gap-4">
+                <span class="text-brand-gray-300 body-3">Disabled / Low Opacity</span>
+                <Petcard 
+                  name="Mr. Ham" 
+                  type="Cat" 
+                  :image="mrHamImg" 
+                  disabled 
+                />
+              </div>
+
+              <!-- Type 3: Regular Clickable -->
+              <div class="flex flex-col items-center gap-4">
+                <span class="text-brand-gray-300 body-3">Regular (No check UI)</span>
+                <Petcard 
+                  name="Mr. Ham" 
+                  type="Cat" 
+                  :image="mrHamImg" 
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- Logo Section First -->
+
         <section class="mb-16">
           <h1 class="headline-1 mb-8">Logo</h1>
           <div
@@ -383,7 +457,115 @@ const steps = [
             </div>
           </div>
         </div>
+
+        <!-- NEW: Pet Sitter Card (Large) Section -->
+        <div class="mt-24 w-full">
+          <h1 class="headline-2 mb-12">Pet Sitter Card - Large</h1>
+          <div class="p-16 border-2 border-dashed border-purple-200 rounded-[40px] bg-brand-gray-50 flex flex-col gap-12 items-center">
+            
+            <!-- DESKTOP VERSION -->
+            <div class="space-y-6 flex flex-col items-center">
+              <span class="text-brand-gray-300 font-bold headline-4">Desktop Version (Normal & Selected)</span>
+              <div class="flex flex-col gap-6">
+                <!-- Normal -->
+                <PetSitterCardLarge 
+                  version="desktop"
+                  :image="houseImg"
+                  :avatar="personImg"
+                  title="Happy House!"
+                  owner="Jame Maison"
+                  location="Senanikom, Bangkok"
+                  :rating="5"
+                  :tags="[
+                    { label: 'Dog', color: 'green' },
+                    { label: 'Cat', color: 'pink' },
+                    { label: 'Rabbit', color: 'yellow' }
+                  ]"
+                  :selected="largeCardSelected"
+                  @click="largeCardSelected = !largeCardSelected"
+                />
+              </div>
+            </div>
+
+            <!-- MOBILE VERSION (md / mb) -->
+            <div class="space-y-6 flex flex-col items-center">
+              <span class="text-brand-gray-300 font-bold headline-4">Mobile Version (mb)</span>
+              <div class="flex gap-10">
+                <PetSitterCardLarge 
+                  version="mb"
+                  :image="houseImg"
+                  :avatar="personImg"
+                  title="Happy House!"
+                  owner="Jame Maison"
+                  location="Senanikom, Bangkok"
+                  :rating="5"
+                  :tags="[
+                    { label: 'Dog', color: 'green' },
+                    { label: 'Cat', color: 'pink' },
+                    { label: 'Rabbit', color: 'yellow' }
+                  ]"
+                  :selected="largeCardMobileSelected"
+                  @click="largeCardMobileSelected = !largeCardMobileSelected"
+                />
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- NEW: Pet Sitter Card (Small) Section -->
+        <div class="mt-24 w-full">
+          <h1 class="headline-2 mb-12">Pet Sitter Card - Small</h1>
+          <div class="p-16 border-2 border-dashed border-purple-200 rounded-[40px] bg-brand-gray-50 flex flex-col gap-12 items-center">
+            
+            <!-- DESKTOP VERSION -->
+            <div class="space-y-6 flex flex-col items-center">
+              <span class="text-brand-gray-300 font-bold headline-4">Desktop Version (Small)</span>
+              <div class="flex flex-col gap-6">
+                <PetSitterCardSmall 
+                  version="Desktop"
+                  :image="houseImg"
+                  title="Happy House!"
+                  owner="Jame Maison"
+                  :rating="5"
+                  :tags="[
+                    { label: 'Dog', color: 'green' },
+                    { label: 'Cat', color: 'pink' },
+                    { label: 'Bird', color: 'blue' },
+                    { label: 'Rabbit', color: 'yellow' }
+                  ]"
+                  :selected="smallCardSelected"
+                  @click="smallCardSelected = !smallCardSelected"
+                />
+              </div>
+            </div>
+
+            <!-- MOBILE VERSION -->
+            <div class="space-y-6 flex flex-col items-center">
+              <span class="text-brand-gray-300 font-bold headline-4">Mobile Version (Small)</span>
+              <div class="flex flex-col gap-6">
+                <PetSitterCardSmall 
+                  version="Mobile"
+                  :image="houseImg"
+                  title="Happy House!"
+                  owner="Jame Maison"
+                  :rating="5"
+                  :tags="[
+                    { label: 'Dog', color: 'green' },
+                    { label: 'Cat', color: 'pink' },
+                    { label: 'Bird', color: 'blue' },
+                    { label: 'Rabbit', color: 'yellow' }
+                  ]"
+                  :selected="smallCardMobileSelected"
+                  @click="smallCardMobileSelected = !smallCardMobileSelected"
+                />
+              </div>
+            </div>
+
+          </div>
+        </div>
       </div>
+
     </main>
 
     <Footer />
@@ -444,3 +626,4 @@ const steps = [
     </main>
   </div>
 </template>
+
