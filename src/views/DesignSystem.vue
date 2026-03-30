@@ -35,7 +35,6 @@ const petSelect1 = ref(false);
 const petSelect2 = ref(true);
 
 const largeCardSelected = ref(false);
-const largeCardSelected2 = ref(true);
 const largeCardMobileSelected = ref(false);
 const smallCardSelected = ref(false);
 const smallCardMobileSelected = ref(false);
