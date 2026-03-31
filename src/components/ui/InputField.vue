@@ -3,7 +3,7 @@ import { CircleAlert } from 'lucide-vue-next'
     // กำหนด props: สิ่งที่หน้าลหักสามารถตั้งค่าได้
     const props = withDefaults(defineProps<{
         label: string;        // ชื่อหัวข้อด้านบน
-        placeholder: string;
+        placeholder?: string;
         type?: string;
         status?: 'normal' | 'success' | 'error' ;
         disabled?: boolean;

@@ -1,4 +1,6 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from "vue-router";
+import AppLayout from "@/components/layout/AppLayout.vue"; // ✅ เพิ่ม
+
 import { useAuthStore, type Role } from '@/stores/auth'
 
 // Define the router
