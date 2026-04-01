@@ -1,0 +1,33 @@
+import axios from 'axios'
+import router from '@/router'
+
+const apiClient = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+// Request interceptor: attach Bearer token from localStorage
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+// Response interceptor: on 401 → logout and redirect to /login
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('auth')
+      await router.push('/login')
+    }
+    return Promise.reject(error)
+  },
+)
+
+export default apiClient
