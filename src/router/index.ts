@@ -1,16 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore, type Role } from '@/stores/auth'
 
+// Define the router
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    // Redirect root based on auth state
+    // Public home route
     {
       path: '/',
-      redirect: () => {
-        const auth = useAuthStore()
-        return auth.isLoggedIn ? auth.getDashboardRoute() : '/login'
-      },
+      name: 'home',
+      component: () => import('@/views/DesignSystem.vue'),
     },
 
     // Public auth routes
@@ -73,11 +72,12 @@ const router = createRouter({
     // Fallback
     {
       path: '/:pathMatch(.*)*',
-      redirect: '/login',
+      redirect: '/',
     },
   ],
 })
 
+// Navigation guard
 router.beforeEach((to) => {
   const auth = useAuthStore()
 
@@ -93,8 +93,8 @@ router.beforeEach((to) => {
 
   // Logged in but wrong role for the route
   if (to.meta.requiresAuth && to.meta.roles) {
-    const allowedRoles = to.meta.roles as string[]
-    if (!allowedRoles.includes(auth.role ?? '')) {
+    const allowedRoles = to.meta.roles as Role[]
+    if (!auth.role || !allowedRoles.includes(auth.role)) {
       return auth.getDashboardRoute()
     }
   }

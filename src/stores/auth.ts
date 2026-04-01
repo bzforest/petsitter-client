@@ -2,10 +2,12 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import apiClient from '@/api/axios'
 
+export type Role = 'ADMIN' | 'SITTER' | 'USER'
+
 export interface AuthState {
   token: string | null
   email: string | null
-  role: string | null
+  role: Role | null
   userId: number | null
 }
 
@@ -13,7 +15,7 @@ export interface RegisterPayload {
   email: string
   password: string
   phone: string
-  role: string
+  role: Exclude<Role, 'ADMIN'>
 }
 
 export interface LoginPayload {
@@ -22,15 +24,52 @@ export interface LoginPayload {
 }
 
 const STORAGE_KEY = 'auth'
+const EMPTY_AUTH_STATE: AuthState = { token: null, email: null, role: null, userId: null }
+const VALID_ROLES: Role[] = ['ADMIN', 'SITTER', 'USER']
+
+interface AuthResponse {
+  token: string
+  email: string
+  role: Role
+  userId: number
+}
+
+function isRole(value: unknown): value is Role {
+  return typeof value === 'string' && VALID_ROLES.includes(value as Role)
+}
+
+function parseAuthResponse(data: unknown): AuthResponse | null {
+  if (!data || typeof data !== 'object') return null
+
+  const parsed = data as Record<string, unknown>
+  if (
+    typeof parsed.token !== 'string' ||
+    typeof parsed.email !== 'string' ||
+    !isRole(parsed.role) ||
+    typeof parsed.userId !== 'number'
+  ) {
+    return null
+  }
+
+  return {
+    token: parsed.token,
+    email: parsed.email,
+    role: parsed.role,
+    userId: parsed.userId,
+  }
+}
 
 function loadFromStorage(): AuthState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
+    if (raw) {
+      const parsed = parseAuthResponse(JSON.parse(raw))
+      if (parsed) return parsed
+    }
   } catch {
     // ignore parse errors
   }
-  return { token: null, email: null, role: null, userId: null }
+  return EMPTY_AUTH_STATE
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -38,7 +77,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const token = ref<string | null>(stored.token)
   const email = ref<string | null>(stored.email)
-  const role = ref<string | null>(stored.role)
+  const role = ref<Role | null>(stored.role)
   const userId = ref<number | null>(stored.userId)
 
   function persist() {
@@ -56,7 +95,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function setAuth(data: { token: string; email: string; role: string; userId: number }) {
+  function setAuth(data: AuthResponse) {
     token.value = data.token
     email.value = data.email
     role.value = data.role
@@ -66,14 +105,18 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function register(payload: RegisterPayload) {
     const { data } = await apiClient.post('/api/auth/register', payload)
-    setAuth(data)
-    return data
+    const parsed = parseAuthResponse(data)
+    if (!parsed) throw new Error('Invalid register response')
+    setAuth(parsed)
+    return parsed
   }
 
   async function login(payload: LoginPayload) {
     const { data } = await apiClient.post('/api/auth/login', payload)
-    setAuth(data)
-    return data
+    const parsed = parseAuthResponse(data)
+    if (!parsed) throw new Error('Invalid login response')
+    setAuth(parsed)
+    return parsed
   }
 
   function logout() {
@@ -86,7 +129,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // Getters
-  const isLoggedIn = computed(() => !!token.value)
+  const isLoggedIn = computed(() => !!token.value && !!role.value)
   const isAdmin = computed(() => role.value === 'ADMIN')
   const isSitter = computed(() => role.value === 'SITTER')
   const isUser = computed(() => role.value === 'USER')
@@ -94,7 +137,8 @@ export const useAuthStore = defineStore('auth', () => {
   function getDashboardRoute(): string {
     if (role.value === 'ADMIN') return '/dashboard/admin'
     if (role.value === 'SITTER') return '/dashboard/sitter'
-    return '/dashboard/owner'
+    if (role.value === 'USER') return '/dashboard/owner'
+    return '/login'
   }
 
   return {
