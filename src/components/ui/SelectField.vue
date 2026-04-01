@@ -4,7 +4,7 @@ import { ChevronDown } from 'lucide-vue-next'
 import { onClickOutside } from '@vueuse/core'
 
 const props = withDefaults(defineProps<{
-    label: string;
+    label?: string;
     placeholder?: string;
     // Dropdown ต้องมีตัวเลือก (option) ส่งมาให้มันด้วย
     options: { label: string; value: string | number } [];

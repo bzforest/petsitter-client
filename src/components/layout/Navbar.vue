@@ -54,7 +54,7 @@ function mockLogin() {
 </script>
 
 <template>
-  <nav class="bg-brand-white shadow-sm sticky top-0 z-50">
+  <nav class="bg-brand-white shadow-sm sticky top-0 z-50 w-full">
     <div
       class="w-full mx-auto px-10 sm:px-20 h-20 flex items-center justify-between"
     >
