@@ -76,6 +76,11 @@ const router = createRouter({
       path: '/:pathMatch(.*)*',
       redirect: '/',
     },
+    {
+      path: "/SearchMap",
+      name: "SearchMap",
+      component: () => import("@/views/SearchMap.vue"),
+    },
   ],
 })
 

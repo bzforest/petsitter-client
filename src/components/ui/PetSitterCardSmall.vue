@@ -27,14 +27,18 @@ const props = withDefaults(defineProps<Props>(), {
 defineEmits(['click']);
 
 const cardClasses = computed(() => {
-  const base = "bg-white overflow-hidden transition-all duration-300 border cursor-pointer";
+  const base = "bg-white transition-all duration-300 cursor-pointer";
   const layout = props.version === 'Mobile' 
-    ? "flex flex-col w-[330px] p-4 rounded-2xl gap-2 shadow-sm" // Increased padding for beauty
-    : "flex flex-row w-[471px] h-[138px] p-4 rounded-2xl gap-4 shadow-sm items-center";
+    ? "flex flex-col w-[330px] p-4 rounded-2xl gap-2 shadow-sm border" // Increased padding for beauty
+    : "flex flex-row w-[471px] h-[138px] p-3 rounded-2xl gap-4 items-center";
   
   const state = props.selected 
-    ? "border-brand-orange-300 shadow-md ring-1 ring-brand-orange-300"
-    : "border-brand-gray-100 hover:border-brand-orange-300";
+    ? props.version === 'Mobile'
+      ? "border-2 border-brand-orange-500 shadow-lg"
+      : "border-2 border-brand-orange-500 shadow-lg"
+    : props.version === 'Mobile'
+      ? "border border-brand-gray-100 shadow-sm hover:border-brand-orange-300"
+      : "border border-brand-gray-100 shadow-sm hover:border-brand-orange-300";
 
   return `${base} ${layout} ${state}`;
 });
