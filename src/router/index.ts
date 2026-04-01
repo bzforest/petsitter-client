@@ -77,9 +77,9 @@ const router = createRouter({
       redirect: '/',
     },
     {
-      path: "/SearchMap",
-      name: "SearchMap",
-      component: () => import("@/views/SearchMap.vue"),
+      path: "/Search",
+      name: "Search",
+      component: () => import("@/views/Search.vue"),
     },
   ],
 })
