@@ -5,9 +5,14 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: "/", // เมื่อเข้า URL หลัก (localhost:5173)
+      path:"/",
+      name:"home",
+      component: () => import("../views/HomeView.vue"),
+    },
+    {
+      path: "/design",
       name: "design-system",
-      component: () => import("../views/DesignSystem.vue"), // ให้ดึงไฟล์นี้มาแสดง
+      component: () => import("../views/DesignSystem.vue"),
     },
     // Jab เพิ่มมาทดสอบการทำงาน Navigation bar ลบออกเมื่อมี authentication
     {
