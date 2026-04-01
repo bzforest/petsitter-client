@@ -1,86 +1,94 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 
-const router = useRouter()
-const authStore = useAuthStore()
+const router = useRouter();
+const authStore = useAuthStore();
 
-// Form state
-const selectedRole = ref<'USER' | 'SITTER'>('USER')
-const email = ref('')
-const phone = ref('')
-const password = ref('')
-const showPassword = ref(false)
-const isLoading = ref(false)
+// Form state สำหรับการลงทะเบียน
+const selectedRole = ref<"USER" | "SITTER">("USER");
+const email = ref("");
+const phone = ref("");
+const password = ref("");
+const showPassword = ref(false);
+const isLoading = ref(false);
 
-// Field-level errors from API
-const errors = ref<{ email?: string; phone?: string; password?: string; general?: string }>({})
+// Field-level errors from API สำหรับการแสดงข้อผิดพลาดจาก API
+const errors = ref<{
+  email?: string;
+  phone?: string;
+  password?: string;
+  general?: string;
+}>({});
 
 const buttonLabel = computed(() =>
-  selectedRole.value === 'USER' ? 'Register as Owner' : 'Register as Sitter',
-)
+  selectedRole.value === "USER" ? "Register as Owner" : "Register as Sitter",
+);
 
-function selectRole(role: 'USER' | 'SITTER') {
-  selectedRole.value = role
-  errors.value = {}
+function selectRole(role: "USER" | "SITTER") {
+  selectedRole.value = role;
+  errors.value = {};
 }
 
 function clearError(field: keyof typeof errors.value) {
-  errors.value[field] = undefined
+  errors.value[field] = undefined;
 }
 
 function parseApiErrors(err: unknown) {
   // Spring Boot validation errors come back as an array or a string
-  const data = (err as any)?.response?.data
+  const data = (err as any)?.response?.data;
   if (!data) {
-    errors.value.general = 'Something went wrong. Please try again.'
-    return
+    errors.value.general = "Something went wrong. Please try again.";
+    return;
   }
 
   // Spring Boot @Valid returns { fieldErrors: [{field, message}] } or a plain message string
-  if (typeof data === 'string') {
-    errors.value.general = data
-    return
+  if (typeof data === "string") {
+    errors.value.general = data;
+    return;
   }
 
   if (Array.isArray(data)) {
     data.forEach((e: { field: string; message: string }) => {
-      if (e.field in errors.value || ['email', 'password', 'phone'].includes(e.field)) {
-        (errors.value as Record<string, string>)[e.field] = e.message
+      if (
+        e.field in errors.value ||
+        ["email", "password", "phone"].includes(e.field)
+      ) {
+        (errors.value as Record<string, string>)[e.field] = e.message;
       }
-    })
-    return
+    });
+    return;
   }
 
   // Common Spring Boot GlobalExceptionHandler pattern: { message: string } or { errors: [...] }
   if (data.errors && Array.isArray(data.errors)) {
     data.errors.forEach((e: { field: string; message: string }) => {
-      if (['email', 'password', 'phone'].includes(e.field)) {
-        (errors.value as Record<string, string>)[e.field] = e.message
+      if (["email", "password", "phone"].includes(e.field)) {
+        (errors.value as Record<string, string>)[e.field] = e.message;
       }
-    })
-    return
+    });
+    return;
   }
 
-  errors.value.general = data.message ?? 'Registration failed.'
+  errors.value.general = data.message ?? "Registration failed.";
 }
 
 async function handleSubmit() {
-  errors.value = {}
-  isLoading.value = true
+  errors.value = {};
+  isLoading.value = true;
   try {
     await authStore.register({
       email: email.value,
       phone: phone.value,
       password: password.value,
       role: selectedRole.value,
-    })
-    await router.push(authStore.getDashboardRoute())
+    });
+    await router.push(authStore.getDashboardRoute());
   } catch (err) {
-    parseApiErrors(err)
+    parseApiErrors(err);
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
 }
 </script>
@@ -91,7 +99,9 @@ async function handleSubmit() {
       <!-- Header -->
       <div class="text-center mb-8">
         <h1 class="text-4xl font-bold text-gray-900 mb-2">Join Us!</h1>
-        <p class="text-gray-500 text-base">Find your perfect pet sitter with us</p>
+        <p class="text-gray-500 text-base">
+          Find your perfect pet sitter with us
+        </p>
       </div>
 
       <!-- Role Toggle -->
@@ -134,7 +144,9 @@ async function handleSubmit() {
       <form @submit.prevent="handleSubmit" novalidate class="space-y-5">
         <!-- Email -->
         <div>
-          <label class="block text-sm font-medium text-gray-800 mb-1">Email</label>
+          <label class="block text-sm font-medium text-gray-800 mb-1"
+            >Email</label
+          >
           <input
             v-model="email"
             type="email"
@@ -148,12 +160,16 @@ async function handleSubmit() {
                 : 'border-gray-200 focus:border-orange-400',
             ]"
           />
-          <p v-if="errors.email" class="mt-1 text-xs text-red-500">{{ errors.email }}</p>
+          <p v-if="errors.email" class="mt-1 text-xs text-red-500">
+            {{ errors.email }}
+          </p>
         </div>
 
         <!-- Phone -->
         <div>
-          <label class="block text-sm font-medium text-gray-800 mb-1">Phone</label>
+          <label class="block text-sm font-medium text-gray-800 mb-1"
+            >Phone</label
+          >
           <input
             v-model="phone"
             type="tel"
@@ -167,12 +183,16 @@ async function handleSubmit() {
                 : 'border-gray-200 focus:border-orange-400',
             ]"
           />
-          <p v-if="errors.phone" class="mt-1 text-xs text-red-500">{{ errors.phone }}</p>
+          <p v-if="errors.phone" class="mt-1 text-xs text-red-500">
+            {{ errors.phone }}
+          </p>
         </div>
 
         <!-- Password -->
         <div>
-          <label class="block text-sm font-medium text-gray-800 mb-1">Password</label>
+          <label class="block text-sm font-medium text-gray-800 mb-1"
+            >Password</label
+          >
           <div class="relative">
             <input
               v-model="password"
@@ -232,7 +252,9 @@ async function handleSubmit() {
               </svg>
             </button>
           </div>
-          <p v-if="errors.password" class="mt-1 text-xs text-red-500">{{ errors.password }}</p>
+          <p v-if="errors.password" class="mt-1 text-xs text-red-500">
+            {{ errors.password }}
+          </p>
           <p class="mt-1 text-xs text-gray-400">Minimum 13 characters</p>
         </div>
 
@@ -250,7 +272,10 @@ async function handleSubmit() {
       <!-- Login link -->
       <p class="text-center text-sm text-gray-500 mt-6">
         Already have an account?
-        <router-link to="/login" class="text-orange-500 font-medium hover:underline">
+        <router-link
+          to="/login"
+          class="text-orange-500 font-medium hover:underline"
+        >
           Log in
         </router-link>
       </p>

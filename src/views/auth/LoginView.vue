@@ -1,52 +1,53 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 
-const router = useRouter()
-const authStore = useAuthStore()
+const router = useRouter();
+const authStore = useAuthStore();
 
-const email = ref('')
-const password = ref('')
-const showPassword = ref(false)
-const isLoading = ref(false)
-const errors = ref<{ email?: string; password?: string; general?: string }>({})
+const email = ref("");
+const password = ref("");
+const showPassword = ref(false);
+const isLoading = ref(false);
+const errors = ref<{ email?: string; password?: string; general?: string }>({});
 
 function clearError(field: keyof typeof errors.value) {
-  errors.value[field] = undefined
+  errors.value[field] = undefined;
 }
 
 function parseApiErrors(err: unknown) {
-  const data = (err as any)?.response?.data
+  const data = (err as any)?.response?.data;
   if (!data) {
-    errors.value.general = 'Something went wrong. Please try again.'
-    return
+    errors.value.general = "Something went wrong. Please try again.";
+    return;
   }
-  if (typeof data === 'string') {
-    errors.value.general = data
-    return
+  if (typeof data === "string") {
+    errors.value.general = data;
+    return;
   }
   if (data.errors && Array.isArray(data.errors)) {
     data.errors.forEach((e: { field: string; message: string }) => {
-      if (['email', 'password'].includes(e.field)) {
-        (errors.value as Record<string, string>)[e.field] = e.message
+      if (["email", "password"].includes(e.field)) {
+        (errors.value as Record<string, string>)[e.field] = e.message;
       }
-    })
-    return
+    });
+    return;
   }
-  errors.value.general = data.message ?? 'Login failed. Please check your credentials.'
+  errors.value.general =
+    data.message ?? "Login failed. Please check your credentials.";
 }
 
 async function handleSubmit() {
-  errors.value = {}
-  isLoading.value = true
+  errors.value = {};
+  isLoading.value = true;
   try {
-    await authStore.login({ email: email.value, password: password.value })
-    await router.push(authStore.getDashboardRoute())
+    await authStore.login({ email: email.value, password: password.value });
+    await router.push(authStore.getDashboardRoute());
   } catch (err) {
-    parseApiErrors(err)
+    parseApiErrors(err);
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
 }
 </script>
@@ -72,7 +73,9 @@ async function handleSubmit() {
       <form @submit.prevent="handleSubmit" novalidate class="space-y-5">
         <!-- Email -->
         <div>
-          <label class="block text-sm font-medium text-gray-800 mb-1">Email</label>
+          <label class="block text-sm font-medium text-gray-800 mb-1"
+            >Email</label
+          >
           <input
             v-model="email"
             type="email"
@@ -86,12 +89,16 @@ async function handleSubmit() {
                 : 'border-gray-200 focus:border-orange-400',
             ]"
           />
-          <p v-if="errors.email" class="mt-1 text-xs text-red-500">{{ errors.email }}</p>
+          <p v-if="errors.email" class="mt-1 text-xs text-red-500">
+            {{ errors.email }}
+          </p>
         </div>
 
         <!-- Password -->
         <div>
-          <label class="block text-sm font-medium text-gray-800 mb-1">Password</label>
+          <label class="block text-sm font-medium text-gray-800 mb-1"
+            >Password</label
+          >
           <div class="relative">
             <input
               v-model="password"
@@ -149,7 +156,9 @@ async function handleSubmit() {
               </svg>
             </button>
           </div>
-          <p v-if="errors.password" class="mt-1 text-xs text-red-500">{{ errors.password }}</p>
+          <p v-if="errors.password" class="mt-1 text-xs text-red-500">
+            {{ errors.password }}
+          </p>
         </div>
 
         <!-- Submit -->
@@ -166,7 +175,10 @@ async function handleSubmit() {
       <!-- Register link -->
       <p class="text-center text-sm text-gray-500 mt-6">
         Don't have an account?
-        <router-link to="/register" class="text-orange-500 font-medium hover:underline">
+        <router-link
+          to="/register"
+          class="text-orange-500 font-medium hover:underline"
+        >
           Sign up
         </router-link>
       </p>
