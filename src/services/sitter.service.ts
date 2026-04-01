@@ -1,14 +1,13 @@
 import api from "../api/axios";
 
-// GET profile
 export const getProfile = async () => {
-  return await api.get("/sitters/profile");
+  return await api.get("/sitter-profiles/me");
 };
 
-export const updateProfile = async (id: string, data: any) => {
-  return await api.put(`/sitters/${id}`, data);
+export const updateProfile = async (id: number, data: any) => {
+  return await api.put(`/sitter-profiles/${id}`, data);
 };
 
-export const requestApproval = async (id: string) => {
-  return await api.patch(`/sitters/${id}/request-approval`);
+export const requestApproval = async (id: number) => {
+  return await api.patch(`/sitter-profiles/${id}/request-approval`);
 };

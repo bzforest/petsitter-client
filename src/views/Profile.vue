@@ -53,13 +53,40 @@
             {{ errors.fullName }}
           </p>
         </div>
-        <InputField label="Experience*" v-model="form.experience" />
+        <InputField
+          label="Experience (years)*"
+          type="number"
+          min="0"
+          max="100"
+          step="1"
+          placeholder="e.g. 3"
+          :model-value="experienceDisplay"
+          @update:model-value="onExperienceNumber"
+        />
       </div>
 
       <div class="grid grid-cols-2 gap-4">
-        <InputField label="Phone Number*" v-model="form.phone" />
         <div>
-          <InputField label="Email*" v-model="form.email" />
+          <InputField
+            label="Phone Number*"
+            :model-value="form.phone"
+            maxlength="10"
+            inputmode="numeric"
+            autocomplete="tel"
+            placeholder="0812345678"
+            @update:model-value="onPhoneDigits"
+          />
+          <p v-if="errors.phone" class="text-brand-red-500 body-3 mt-1">
+            {{ errors.phone }}
+          </p>
+        </div>
+        <div>
+          <InputField
+            label="Email*"
+            :model-value="form.email"
+            autocomplete="email"
+            @update:model-value="onEmailInput"
+          />
           <p v-if="errors.email" class="text-brand-red-500 body-3 mt-1">
             {{ errors.email }}
           </p>
@@ -95,8 +122,11 @@
       </div>
     </section>
 
-    <!-- ADDRESS -->
-    <section class="bg-brand-white rounded-2xl p-6 shadow-sm space-y-6">
+    <!-- ADDRESS + map — Figma: แสดงเมื่อ Approved เท่านั้น -->
+    <section
+      v-if="status === 'approved'"
+      class="bg-brand-white rounded-2xl p-6 shadow-sm space-y-6"
+    >
       <h2 class="body-1 font-bold text-brand-gray-900">Address</h2>
 
       <div class="relative">
@@ -140,7 +170,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted, nextTick } from "vue";
 import { getProfile, updateProfile, requestApproval } from "../services/sitter.service";
 import { uploadImage } from "@/services/supabase.service";
 import { useToast } from "@/composables/useToast";
@@ -161,9 +191,15 @@ const profile = ref<any>(null);
 const status = ref<"approved" | "pending" | "rejected">("pending");
 const rejectionMessage = ref("");
 
+const statusMap: Record<string, "approved" | "pending" | "rejected"> = {
+  APPROVED: "approved",
+  WAITING_FOR_APPROVE: "pending",
+  REJECTED: "rejected",
+};
+
 const form = ref({
   fullName: "",
-  experience: "",
+  experience: null as number | null,
   phone: "",
   email: "",
   intro: "",
@@ -185,13 +221,39 @@ const form = ref({
 const errors = ref({
   fullName: "",
   email: "",
+  phone: "",
 });
+
+const MSG_PHONE_10_DIGITS = "Phone number must be exactly 10 digits.";
+const MSG_EMAIL_INVALID =
+  "Enter a valid email address. It must include @ and a domain (e.g. name@example.com).";
+
+function isValidEmailFormat(value: string): boolean {
+  const t = value.trim();
+  if (!t.includes("@")) return false;
+  const at = t.indexOf("@");
+  if (at <= 0) return false;
+  const local = t.slice(0, at);
+  const domain = t.slice(at + 1);
+  if (!local.length || !domain.length) return false;
+  return domain.includes(".");
+}
+
+const onPhoneDigits = (value: string) => {
+  form.value.phone = value.replace(/\D/g, "").slice(0, 10);
+  if (errors.value.phone) errors.value.phone = "";
+};
+
+const onEmailInput = (value: string) => {
+  form.value.email = value;
+  if (errors.value.email) errors.value.email = "";
+};
 
 const imagePreview = ref<string | null>(null);
 const galleryPreview = ref<string[]>([]);
 const loading = ref(false);
 const requesting = ref(false);
-const sitterId = ref<string | null>(null);
+const sitterId = ref<number | null>(null);
 
 let map: any;
 let marker: any;
@@ -199,6 +261,32 @@ let marker: any;
 // 🔥 ADD ONLY (search state)
 const searchQuery = ref("");
 const suggestions = ref<any[]>([]);
+
+const experienceDisplay = computed(() =>
+  form.value.experience === null || form.value.experience === undefined
+    ? ""
+    : String(form.value.experience)
+);
+
+function parseExperienceFromApi(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  if (typeof value === "number" && !Number.isNaN(value)) return Math.trunc(value);
+  if (typeof value === "string") {
+    const n = parseInt(value.trim(), 10);
+    return Number.isNaN(n) ? null : n;
+  }
+  return null;
+}
+
+const onExperienceNumber = (value: string) => {
+  const t = value.trim();
+  if (t === "") {
+    form.value.experience = null;
+    return;
+  }
+  const n = parseInt(t, 10);
+  form.value.experience = Number.isNaN(n) ? null : n;
+};
 
 onMounted(async () => {
   try {
@@ -209,19 +297,19 @@ onMounted(async () => {
     sitterId.value = data.id;
 
     form.value.fullName = data.fullName || "";
-    form.value.experience = data.experience || "";
-    form.value.phone = data.phone || "";
+    form.value.experience = parseExperienceFromApi(data.experience);
+    form.value.phone = String(data.phone ?? "").replace(/\D/g, "").slice(0, 10);
     form.value.email = data.email || "";
-    form.value.intro = data.intro || "";
+    form.value.intro = data.bio || "";
     form.value.tradeName = data.tradeName || "";
     form.value.petTypes = data.petTypes || "";
     form.value.services = data.services || "";
-    form.value.place = data.place || "";
-    form.value.address = data.address || "";
+    form.value.place = data.placeDescription || "";
+    form.value.address = data.addressLine || "";
     form.value.district = data.district || "";
     form.value.subDistrict = data.subDistrict || "";
     form.value.province = data.province || "";
-    form.value.postCode = data.postCode || "";
+    form.value.postCode = data.postalCode || "";
     form.value.profileImage = data.profileImage || "";
     form.value.gallery = data.gallery || [];
     form.value.latitude = data.latitude || null;
@@ -229,10 +317,13 @@ onMounted(async () => {
 
     galleryPreview.value = [...form.value.gallery];
 
-    status.value = (data.status || "pending").toLowerCase();
-    rejectionMessage.value = data.rejectionMessage || "";
+    status.value = statusMap[data.status] || "pending";
+    rejectionMessage.value = data.rejectReason || "";
 
-    setTimeout(initMap, 0);
+    await nextTick();
+    if (status.value === "approved") {
+      setTimeout(initMap, 0);
+    }
   } catch (err) {
     console.error(err);
     showToast("Failed to load profile, please refresh", "error");
@@ -242,6 +333,12 @@ onMounted(async () => {
 const initMap = () => {
   const el = document.getElementById("map");
   if (!el) return;
+
+  if (map) {
+    map.remove();
+    map = null;
+    marker = null;
+  }
 
   map = L.map(el).setView([13.7563, 100.5018], 13);
 
@@ -346,39 +443,54 @@ const selectLocation = (item: any) => {
   });
 };
 
-const validate = () => {
-  let valid = true;
-
-  errors.value.fullName = "";
-  errors.value.email = "";
-
-  if (!form.value.fullName) {
-    errors.value.fullName = "Full name is required";
-    valid = false;
-  }
-
-  if (!form.value.email) {
-    errors.value.email = "Email is required";
-    valid = false;
-  }
-
-  return valid;
-};
-
 const handleSave = async () => {
-  if (!validate()) {
-    showToast("Please fix form errors", "error");
-    return;
-  }
-
   if (!sitterId.value) {
     showToast("Profile not loaded, please refresh", "error");
     return;
   }
 
+  errors.value.email = "";
+  errors.value.phone = "";
+
+  const exp = form.value.experience;
+  if (exp === null || exp < 0 || exp > 100) {
+    showToast("Please enter experience (years, 0–100)", "error");
+    return;
+  }
+
+  if (!/^\d{10}$/.test(form.value.phone.trim())) {
+    errors.value.phone = MSG_PHONE_10_DIGITS;
+    showToast(MSG_PHONE_10_DIGITS, "error");
+    return;
+  }
+
+  if (!isValidEmailFormat(form.value.email)) {
+    errors.value.email = MSG_EMAIL_INVALID;
+    showToast(MSG_EMAIL_INVALID, "error");
+    return;
+  }
+
   try {
     loading.value = true;
-    await updateProfile(sitterId.value, form.value);
+    await updateProfile(sitterId.value, {
+      bio: form.value.intro,
+      pricePerHour: (form.value as any).pricePerHour,
+      experience: exp,
+      phone: form.value.phone.trim(),
+      email: form.value.email.trim(),
+      tradeName: form.value.tradeName,
+      petTypes: form.value.petTypes,
+      services: form.value.services,
+      placeDescription: form.value.place,
+      latitude: form.value.latitude,
+      longitude: form.value.longitude,
+      gallery: form.value.gallery,
+      addressLine: form.value.address,
+      district: form.value.district,
+      subDistrict: form.value.subDistrict,
+      province: form.value.province,
+      postalCode: form.value.postCode,
+    });
     showToast("Saved successfully", "success");
   } catch (err) {
     console.error(err);
