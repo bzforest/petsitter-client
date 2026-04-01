@@ -107,7 +107,6 @@ export const useAuthStore = defineStore('auth', () => {
     const { data } = await apiClient.post('/api/auth/register', payload)
     const parsed = parseAuthResponse(data)
     if (!parsed) throw new Error('Invalid register response')
-    setAuth(parsed)
     return parsed
   }
 

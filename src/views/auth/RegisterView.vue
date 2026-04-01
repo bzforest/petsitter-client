@@ -84,7 +84,7 @@ async function handleSubmit() {
       password: password.value,
       role: selectedRole.value,
     });
-    await router.push(authStore.getDashboardRoute());
+    await router.push("/login");
   } catch (err) {
     parseApiErrors(err);
   } finally {

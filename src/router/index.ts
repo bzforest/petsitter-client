@@ -9,7 +9,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: () => import('@/views/DesignSystem.vue'),
+      component: () => import('@/views/HomeView.vue'),
     },
 
     // Public auth routes
@@ -27,6 +27,8 @@ const router = createRouter({
     },
 
     // Protected dashboard routes
+    // TEST ONLY
+    // TODO: Remove this after testing
     {
       path: '/dashboard/owner',
       name: 'dashboard-owner',
@@ -64,8 +66,8 @@ const router = createRouter({
       component: () => import('@/views/DesignSystem.vue'),
     },
     {
-      path: '/design-system',
-      name: 'design-system',
+      path: '/design',
+      name: 'design',
       component: () => import('@/views/DesignSystem.vue'),
     },
 
