@@ -106,6 +106,18 @@ const router = createRouter({
       component: () => import('@/views/DesignSystem.vue'),
     },
 
+    // Admin routes
+    {
+      path: '/admin',
+      component: () => import('@/components/layout/AdminLayout.vue'),
+      meta: { requiresAuth: true, role: 'ADMIN' },
+      children: [
+        { path: 'pet-owners',  component: () => import('@/views/admin/PetOwnerView.vue') },
+        { path: 'pet-sitters', component: () => import('@/views/admin/PetSitterView.vue') },
+        { path: 'reports',     component: () => import('@/views/admin/ReportView.vue') },
+      ]
+    },
+
     // Fallback
     {
       path: '/:pathMatch(.*)*',
