@@ -3,11 +3,17 @@ import { CircleAlert } from 'lucide-vue-next'
     // กำหนด props: สิ่งที่หน้าลหักสามารถตั้งค่าได้
     const props = withDefaults(defineProps<{
         label: string;        // ชื่อหัวข้อด้านบน
-        placeholder: string;
+        placeholder?: string;
         type?: string;
         status?: 'normal' | 'success' | 'error' ;
         disabled?: boolean;
         modelValue?: string;   //  ค่าที่เชื่อมกับ v-model
+        min?: string | number;
+        max?: string | number;
+        step?: string | number;
+        maxlength?: string | number;
+        inputmode?: 'text' | 'search' | 'none' | 'tel' | 'url' | 'email' | 'numeric' | 'decimal';
+        autocomplete?: string;
     }>(), {
         // ค่าเริ่มต้น ถ้าค่าหลักไม่ส่งมา จะใช้ค่าพวกนี้แทน
         type: 'text',
@@ -41,6 +47,12 @@ import { CircleAlert } from 'lucide-vue-next'
                 :type="type"
                 :placeholder="placeholder"
                 :disabled="disabled"
+                :min="min"
+                :max="max"
+                :step="step"
+                :maxlength="maxlength"
+                :inputmode="inputmode"
+                :autocomplete="autocomplete"
                 :value="modelValue"
                 @input="handleInput"
                 class="w-full px-4 py-3 rounded-xl border outline-none body-2 transition-colors duration-200"

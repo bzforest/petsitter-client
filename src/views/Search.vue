@@ -258,7 +258,7 @@ const zoomIn = () => { if (mapInstance.value) mapInstance.value.zoomIn(); };
 const zoomOut = () => { if (mapInstance.value) mapInstance.value.zoomOut(); };
 
 const goToSitterProfile = () => {
-  router.push('/profile');
+  router.push('/sitterprofile/profile');
 };
 </script>
 

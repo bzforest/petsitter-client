@@ -1,4 +1,6 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from "vue-router";
+import AppLayout from "@/components/layout/AppLayout.vue"; // ✅ เพิ่ม
+
 import { useAuthStore, type Role } from '@/stores/auth'
 
 // Define the router
@@ -12,6 +14,19 @@ const router = createRouter({
       component: () => import('@/views/HomeView.vue'),
     },
 
+    {
+      path: "/sitterprofile",
+      name: "sitterprofile",
+      component: AppLayout,
+      children: [
+        {
+          path: "profile",
+          name: "profile",
+          component: () => import("../views/Profile.vue"),
+        },
+      ],
+
+    },
     // Public auth routes
     {
       path: '/register',

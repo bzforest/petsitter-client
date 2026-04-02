@@ -2,8 +2,12 @@
 import { ref } from 'vue'
 import { UserRound } from 'lucide-vue-next';
 
-const props = defineProps<{
-    variant?: 'square' | 'circle'  // default = square
+defineProps<{
+    variant?: 'square' | 'circle'
+}>()
+
+const emit = defineEmits<{
+    (e: 'change', event: Event): void
 }>()
 
 const previewUrl = ref<string | null>(null)
@@ -12,6 +16,7 @@ function onFileChange(e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0]
     if (!file) return
     previewUrl.value = URL.createObjectURL(file)
+    emit('change', e)
 }
 
 function removeImage() {
