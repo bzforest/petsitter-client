@@ -2,6 +2,7 @@
 import { computed, defineComponent, h } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import adminLogo from "@/assets/logo/AdminSidebar-logo.svg";
 
 // ── Props & Emits ──────────────────────────────────────────
 defineProps<{ collapsed: boolean }>();
@@ -105,20 +106,17 @@ const navItems = [
 
 <template>
   <aside
-    class="flex flex-col h-screen bg-[#111111] text-white transition-all duration-300 ease-in-out relative"
-    :class="collapsed ? 'w-[68px]' : 'w-[220px]'"
+    class="flex flex-col h-screen bg-brand-black text-white transition-all duration-300 ease-in-out relative"
+    :class="collapsed ? 'w-[68px]' : 'w-[240px]'"
   >
     <!-- Logo -->
-    <div class="px-5 pt-6 pb-5 border-b border-white/5 overflow-hidden">
+    <div class="px-5 py-10 overflow-hidden">
       <div class="flex items-center gap-2 whitespace-nowrap">
-        <span class="font-black text-xl tracking-tight leading-none">
-          <span class="text-white">S</span><span class="text-white">itter</span
-          ><span class="text-orange-500">✦</span>
-        </span>
+        <img :src="adminLogo" alt="Admin Logo" class="w-[132px] h-[40px]" />
       </div>
       <p
         v-if="!collapsed"
-        class="text-[10px] tracking-[3px] text-white/25 uppercase mt-1 font-medium"
+        class="body-2 text-brand-white uppercase mt-1 font-medium"
       >
         Admin Panel
       </p>
@@ -126,12 +124,7 @@ const navItems = [
 
     <!-- Nav Items -->
     <nav class="flex-1 px-3 pt-4 flex flex-col gap-0.5 overflow-hidden">
-      <p
-        v-if="!collapsed"
-        class="text-[9px] tracking-[3px] text-white/20 uppercase px-2 pb-2 font-semibold"
-      >
-        Manage
-      </p>
+      
 
       <RouterLink
         v-for="item in navItems"
@@ -143,10 +136,11 @@ const navItems = [
         <!-- Active indicator -->
         <span
           class="absolute left-0 top-1/4 h-1/2 w-[3px] bg-orange-500 rounded-r-full opacity-0 transition-opacity duration-150 group-[.sidebar-active]:opacity-100"
-        />
+        >
+        </span>
 
         <!-- Icon -->
-        <span class="w-5 h-5 flex-shrink-0 flex items-center justify-center">
+        <span class="w-5 h-5 shrink-0 flex items-center justify-center">
           <component :is="item.icon" class="w-[18px] h-[18px]" />
         </span>
 
