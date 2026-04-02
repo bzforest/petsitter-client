@@ -1,17 +1,14 @@
-import { supabase } from "@/lib/supabase";
+import apiClient from "../api/axios";
 
 export const uploadImage = async (file: File) => {
-  const fileName = `${Date.now()}-${file.name}`;
+  const formData = new FormData();
+  formData.append("file", file);
 
-  const { error } = await supabase.storage
-    .from("profile-images")
-    .upload(fileName, file);
+  formData.append("bucket", "profile-images");
 
-  if (error) throw error;
+  const res = await apiClient.post("/api/media/upload", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 
-  const { data: publicUrl } = supabase.storage
-    .from("profile-images")
-    .getPublicUrl(fileName);
-
-  return publicUrl.publicUrl;
+  return res.data.url as string;
 };

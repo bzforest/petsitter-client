@@ -11,7 +11,7 @@
         <!-- Menu -->
         <nav class="mt-4 flex flex-col gap-2 px-3">
   
-          <RouterLink to="/profile" class="menu-item active">
+          <RouterLink to="/sitterprofile/profile" class="menu-item active">
             Pet Sitter Profile
           </RouterLink>
   
