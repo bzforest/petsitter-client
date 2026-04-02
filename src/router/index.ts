@@ -109,8 +109,8 @@ const router = createRouter({
     // Admin routes
     {
       path: '/admin',
-      component: () => import('@/components/layout/AdminLayout.vue'),
-      meta: { requiresAuth: true, role: 'ADMIN' },
+      component: () => import('@/components/layout/admin/AdminLayout.vue'),
+      meta: { requiresAuth: true, roles: ['ADMIN'] },
       children: [
         { path: 'pet-owners',  component: () => import('@/views/admin/PetOwnerView.vue') },
         { path: 'pet-sitters', component: () => import('@/views/admin/PetSitterView.vue') },
@@ -151,9 +151,12 @@ router.beforeEach((to) => {
   }
 
   // Logged in but wrong role for the route
-  if (to.meta.requiresAuth && to.meta.roles) {
-    const allowedRoles = to.meta.roles as Role[]
-    if (!auth.role || !allowedRoles.includes(auth.role)) {
+  if (to.meta.requiresAuth && (to.meta.roles || (to.meta as any).role)) {
+    const allowedRoles = ((to.meta.roles ?? (to.meta as any).role)
+      ? (Array.isArray(to.meta.roles) ? to.meta.roles : [((to.meta as any).role)])
+      : []) as Role[]
+
+    if (!auth.role || allowedRoles.length === 0 || !allowedRoles.includes(auth.role)) {
       return auth.getDashboardRoute()
     }
   }

@@ -2,7 +2,7 @@
 import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
-import AdminSidebar from "@/components/layout/AdminSidebar.vue";
+import AdminSidebar from "@/components/layout/admin/AdminSidebar.vue";
 
 const collapsed = ref(false);
 const route = useRoute();
