@@ -93,8 +93,13 @@ const router = createRouter({
     },
     {
       path: "/Search",
-      name: "Search",
+      name: "SearchMap",
       component: () => import("@/views/Search.vue"),
+    },
+    {
+      path: "/pet-sitter-detail",
+      name: "PetSitterDetail",
+      component: () => import("@/views/PetSitterDetail.vue"),
     },
   ],
 })

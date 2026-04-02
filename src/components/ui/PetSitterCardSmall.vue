@@ -29,16 +29,12 @@ defineEmits(['click']);
 const cardClasses = computed(() => {
   const base = "bg-white transition-all duration-300 cursor-pointer";
   const layout = props.version === 'Mobile' 
-    ? "flex flex-col w-[330px] p-4 rounded-2xl gap-2 shadow-sm border" // Increased padding for beauty
+    ? "flex flex-col w-[330px] p-4 rounded-2xl gap-2 border"
     : "flex flex-row w-[471px] h-[138px] p-3 rounded-2xl gap-4 items-center";
   
   const state = props.selected 
-    ? props.version === 'Mobile'
-      ? "border-2 border-brand-orange-500 shadow-lg"
-      : "border-2 border-brand-orange-500 shadow-lg"
-    : props.version === 'Mobile'
-      ? "border border-brand-gray-100 shadow-sm hover:border-brand-orange-300"
-      : "border border-brand-gray-100 shadow-sm hover:border-brand-orange-300";
+    ? "border-2 border-brand-orange-500"
+    : "border border-brand-gray-100 hover:border-brand-orange-300";
 
   return `${base} ${layout} ${state}`;
 });
@@ -91,7 +87,7 @@ const imageClasses = computed(() => {
       </div>
 
       <!-- Rating Stars Row -->
-      <div class="flex items-center gap-0.5 mt-1 ml-[136px]"> <!-- Offset slightly to align with text if desired, or keep left -->
+      <div class="flex items-center gap-0.5 mt-1 ml-[100px]"> <!-- Offset slightly to align with text if desired, or keep left -->
         <Star v-for="i in 5" :key="i" :size="14"
           :fill="i <= rating ? '#1CCD83' : '#AEB1C3'"
           :color="i <= rating ? '#1CCD83' : '#AEB1C3'"
