@@ -316,8 +316,8 @@ const getUserLocation = () => {
 const zoomIn = () => { if (mapInstance.value) mapInstance.value.zoomIn(); };
 const zoomOut = () => { if (mapInstance.value) mapInstance.value.zoomOut(); };
 
-const goToSitterProfile = () => {
-  router.push({ name: 'PetSitterDetail' });
+const goToSitterProfile = (id: number) => {
+  router.push({ name: 'sitter-detail', params: { id } });
 };
 
 // Ensure map renders correctly when switching back from List view
@@ -472,7 +472,7 @@ const scrollToTop = () => {
                     :rating="sitter.rating"
                     :tags="sitter.tags"
                     :selected="selectedSitterId === sitter.id"
-                    @click="goToSitterProfile"
+                    @click="goToSitterProfile(sitter.id)"
                   />
                 </div>
                 <div class="shrink-0 w-8"></div>
@@ -494,7 +494,7 @@ const scrollToTop = () => {
                 :location="sitter.location"
                 :tags="sitter.tags"
                 class="w-full xl:max-w-none"
-                @click="goToSitterProfile"
+                @click="goToSitterProfile(sitter.id)"
               />
               
               <!-- Pagination (Requirement 1: Centered) -->

@@ -18,7 +18,7 @@ defineEmits<{
         <!-- Header -->
         <div class="flex items-center justify-between pb-5">
             <h2 class="headline-4 text-black">{{ title ?? 'Booking Confirmation' }}</h2>
-            <button @click="$emit('cancel')" class="text-brand-gray-300 hover:text-brand-gray-500 text-2xl">
+            <button @click="$emit('cancel')" class="text-brand-gray-300 hover:text-brand-gray-500 text-2xl cursor-pointer">
                 ✕
             </button>
         </div>
@@ -29,11 +29,13 @@ defineEmits<{
 
         <div class="flex items-center justify-between mt-2">
             <Button @click="$emit('cancel')"
-                variant="secondary">
+                variant="secondary"
+                class="cursor-pointer rounded-full">
                 Cancel
             </Button>
             <Button @click="$emit('confirm')"
-                variant="primary">
+                variant="primary"
+                class="cursor-pointer rounded-full">
                 {{ confirmLabel ?? "Yes, I'm sure" }}
             </Button>
         </div>

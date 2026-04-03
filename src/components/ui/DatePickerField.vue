@@ -6,6 +6,7 @@ const props = withDefaults(defineProps<{
     status?: 'normal' | 'success' | 'error';
     disabled?: boolean;
     modelValue?: string;   // ค่าที่ได้จะเป็น Format: YYYY-MM-DD
+    min?: string;          // YYYY-MM-DD (Minimum selectable date)
 }>() , {
     status: 'normal',
     disabled: false,
@@ -32,6 +33,7 @@ const handleInput = (event: Event) => {
           type="date"
           :disabled="disabled"
           :value="modelValue"
+          :min="min"
           @input="handleInput"
           class="w-full px-4 py-3 rounded-xl border outline-none body-2 transition-colors duration-200 date-input"
           :class="{
