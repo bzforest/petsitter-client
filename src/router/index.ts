@@ -73,8 +73,28 @@ const router = createRouter({
       component: () => import('@/views/DesignSystem.vue'),
     },
     {
+      path: '/sitter/:id',
+      name: 'sitter-detail',
+      component: () => import('@/views/sitter/SitterDetailView.vue'),
+    },
+    {
+      path: '/sitter/:id/booking',
+      name: 'booking',
+      component: () => import('@/views/booking/BookingView.vue'),
+      meta: { requiresAuth: true, roles: ['USER', 'SITTER'] }
+    },
+    {
+      path: '/booking-success/:id',
+      name: 'booking-success',
+      component: () => import('@/views/booking/BookingSuccessView.vue'),
+      meta: { requiresAuth: true }
+    },
+
+    {
       path: '/your-pet',
-      component: () => import('@/views/DesignSystem.vue'),
+      name: 'your-pet',
+      component: () => import('@/views/pet/YourPetsView.vue'),
+      meta: { requiresAuth: true }
     },
     {
       path: '/history',
