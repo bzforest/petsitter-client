@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import AppLayout from "@/components/layout/AppLayout.vue"; // ✅ เพิ่ม
+import SitterLayout from "@/components/layout/SitterLayout.vue";
 
 import { useAuthStore, type Role } from '@/stores/auth'
 
@@ -17,7 +17,7 @@ const router = createRouter({
     {
       path: "/sitterprofile",
       name: "sitterprofile",
-      component: AppLayout,
+      component: SitterLayout,
       children: [
         {
           path: "profile",

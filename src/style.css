@@ -94,3 +94,36 @@
     @apply font-sans bg-brand-white; 
   }
 }
+
+/* Leaflet: custom draggable paw marker (no default broken icon) */
+.sitter-map-paw-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.sitter-map-paw-pin {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background-color: var(--color-brand-orange-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.18);
+  color: var(--color-brand-white);
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+/* Leaflet: custom draggable pin marker (use design system PinSelection assets) */
+.sitter-map-pin-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.sitter-map-pin-img {
+  width: 3.5rem; /* 56px */
+  height: auto;
+  display: block;
+  pointer-events: none; /* let Leaflet handle drag/click */
+}
