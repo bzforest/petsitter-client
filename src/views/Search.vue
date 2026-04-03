@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, h, render as vueRender, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import Navbar from '@/components/layout/Navbar.vue';
 import Footer from '@/components/layout/Footer.vue';
 import PetSitterCardSmall from '@/components/ui/PetSitterCardSmall.vue';
@@ -16,102 +16,61 @@ import RatingSelection from '@/components/ui/RatingSelection.vue'
 import SelectField from '@/components/ui/SelectField.vue'
 import Button from '@/components/ui/Button.vue'
 import { onUnmounted } from 'vue';
+import apiClient from '@/api/axios'; // Add this
 
 const router = useRouter();
+const route = useRoute();
 
 // View switching state
 const viewMode = ref<'list' | 'map'>('list');
 
 // Mock Data for Sitters (Thai context as requested)
-const sitters = ref([
-  {
-    id: 1,
-    title: "บ้านสุขสันต์สำหรับสัตว์เลี้ยง!",
-    owner: "คุณเจมส์ เมซอง",
-    location: "เสนานิคม, กรุงเทพมหานคร",
-    rating: 5,
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=James",
-    tags: [
-      { label: "Dog", color: "green" as const },
-      { label: "Cat", color: "pink" as const },
-      { label: "Rabbit", color: "yellow" as const },
-    ],
-    image: houseImg,
-    lat: 13.820,
-    lng: 100.580,
-  },
-  {
-    id: 2,
-    title: "Puppy Paradise 🐶 สวรรค์ของน้องหมา",
-    owner: "คุณซาร่า สมิธ",
-    location: "ลาดพร้าว, กรุงเทพมหานคร",
-    rating: 4,
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-    tags: [
-      { label: "Dog", color: "green" as const }
-    ],
-    image: houseImg, 
-    lat: 13.810,
-    lng: 100.600,
-  },
-  {
-    id: 3,
-    title: "อาณาจักรเจ้าเหมียว Kitty Kingdom",
-    owner: "คุณไมค์ เมี๊ยว",
-    location: "จตุจักร, กรุงเทพมหานคร",
-    rating: 5,
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mike",
-    tags: [
-      { label: "Cat", color: "pink" as const },
-      { label: "Bird", color: "blue" as const }
-    ],
-    image: houseImg,
-    lat: 13.825,
-    lng: 100.560,
-  },
-  {
-    id: 4,
-    title: "Bunny Burrow โพรงกระต่ายน้อย",
-    owner: "คุณอลิซ วันเดอร์แลนด์",
-    location: "พญาไท, กรุงเทพมหานคร",
-    rating: 4,
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alice",
-    tags: [
-      { label: "Rabbit", color: "yellow" as const }
-    ],
-    image: houseImg,
-    lat: 13.780,
-    lng: 100.540,
-  },
-  {
-    id: 5,
-    title: "บ้านพักกระต่ายแสนอบอุ่น",
-    owner: "คุณอลิซ วันเดอร์แลนด์",
-    location: "พญาไท, กรุงเทพมหานคร",
-    rating: 4,
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alice2",
-    tags: [
-      { label: "Rabbit", color: "yellow" as const }
-    ],
-    image: houseImg,
-    lat: 13.790,
-    lng: 100.550,
-  },
-  {
-    id: 6,
-    title: "Bunny Burrow โพรงกระต่ายน้อย",
-    owner: "คุณอลิซ วันเดอร์แลนด์",
-    location: "พญาไท, กรุงเทพมหานคร",
-    rating: 5,
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alice",
-    tags: [
-      { label: "Rabbit", color: "yellow" as const }
-    ],
-    image: houseImg,
-    lat: 13.550,
-    lng: 100.540,
-  },
-]);
+const sitters = ref<any[]>([]);
+
+const tagColorMap: Record<string, string> = {
+  'Dog': 'green',
+  'Cat': 'pink',
+  'Rabbit': 'yellow',
+  'Bird': 'blue'
+};
+
+const fetchSitters = async () => {
+  try {
+    const response = await apiClient.get('/api/sitter-profiles', {
+      params: { 
+        size: 100, // Get enough for map pins
+        query: route.query.q,
+        petTypes: route.query.pets,
+        rating: route.query.rating,
+        experience: route.query.exp
+      }
+    });
+    
+    // Map backend response to frontend view model
+    sitters.value = response.data.content.map((profile: any) => ({
+      id: profile.id,
+      title: profile.tradeName || "รับฝากสัตว์เลี้ยง",
+      owner: profile.fullName || "ไม่ระบุชื่อ",
+      location: profile.province ? `${profile.district || ''}, ${profile.province}` : "ไม่ระบุตำแหน่ง",
+      rating: Math.round(profile.ratingAvg || 0),
+      avatar: profile.profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.id}`,
+      tags: (profile.petTypes || "").split(',').filter(Boolean).map((tag: string) => ({
+        label: tag.trim(),
+        color: (tagColorMap[tag.trim()] || 'green') as any
+      })),
+      image: (profile.gallery && profile.gallery.length > 0) ? profile.gallery[0] : houseImg,
+      lat: profile.latitude, // Remove default
+      lng: profile.longitude, // Remove default
+    }));
+    
+    // Draw markers after fetching
+    if (mapInstance.value) {
+      drawMarkers();
+    }
+  } catch (error) {
+    console.error('Failed to fetch sitters:', error);
+  }
+};
 
 // Pagination logic
 const currentPage = ref(1);
@@ -127,6 +86,7 @@ const paginatedSitters = computed(() => {
 
 const selectedSitterId = ref<number | null>(null);
 const mapInstance = ref<any>(null);
+const markerGroup = ref<any>(null);
 const userLocation = ref<[number, number] | null>(null);
 const isMapInitialized = ref(false);
 
@@ -167,6 +127,12 @@ const sliderRef = ref<HTMLElement | null>(null);
 let isDragging = false;
 let dragStartX = 0;
 let scrollStartLeft = 0;
+
+// Watch for query changes to re-fetch
+watch(() => route.query, () => {
+  currentPage.value = 1; // Reset to page 1 on filter
+  fetchSitters();
+}, { deep: true });
 
 const onWheel = (e: WheelEvent) => {
   if (!sliderRef.value) return;
@@ -213,9 +179,10 @@ onMounted(() => {
   // Add Leaflet JS
   const script = document.createElement('script');
   script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-  script.onload = () => {
+  script.onload = async () => {
     initLeaflet();
-    getUserLocation(); // Requirement Image 2: Geolocation API
+    getUserLocation();
+    await fetchSitters(); // Fetch data after Leaflet is ready
   };
   document.head.appendChild(script);
 });
@@ -242,15 +209,21 @@ const initLeaflet = () => {
     maxZoom: 19,
   }).addTo(mapInstance.value);
 
+  markerGroup.value = L.layerGroup().addTo(mapInstance.value);
+
   drawMarkers();
   isMapInitialized.value = true;
 };
 
 const drawMarkers = () => {
   const L = (window as any).L;
-  if (!L || !mapInstance.value) return;
+  // Clear existing markers
+  markerGroup.value.clearLayers();
 
   sitters.value.forEach(sitter => {
+    // Check if coordinates exist before drawing pin
+    if (!sitter.lat || !sitter.lng) return;
+
     const customIcon = L.divIcon({
       className: 'custom-pin-marker',
       html: `<div id="pin-${sitter.id}"></div>`,
@@ -533,12 +506,12 @@ const scrollToTop = () => {
               </div>
              
              <!-- Empty state -->
-             <div v-if="sitters.length === 0" class="flex flex-col items-center justify-center py-20 text-brand-gray-300">
-                <div class="w-20 h-20 bg-brand-gray-50 rounded-full flex items-center justify-center mb-4">
-                  <SearchIcon class="w-10 h-10" />
+             <div v-if="sitters.length === 0" class="w-full flex flex-col items-center justify-center py-40 text-brand-gray-300">
+                <div class="w-24 h-24 bg-brand-gray-50 rounded-full flex items-center justify-center mb-6">
+                  <SearchIcon class="w-12 h-12" />
                 </div>
-                <p class="headline-4">ไม่พบข้อมูลผู้รับฝากสัตว์เลี้ยง</p>
-                <p class="body-2">ลองปรับการตั้งค่าตัวกรองของคุณ</p>
+                <p class="headline-3 text-brand-gray-400">ไม่พบข้อมูลผู้รับฝากสัตว์เลี้ยง</p>
+                <p class="body-1 text-brand-gray-400 mt-2">ลองปรับการตั้งค่าตัวกรองของคุณ หรือค้นหาพื้นที่อื่น</p>
              </div>
           </div>
 
