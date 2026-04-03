@@ -30,9 +30,7 @@ import ElementSection from '@/components/home/ElementSection.vue';
         <InfoSection />
       </section>
   
-      <footer class="py-12 bg-brand-black text-white text-center">
-        <Footer />
-      </footer>
+      <Footer />
   
     </main>
   </template>

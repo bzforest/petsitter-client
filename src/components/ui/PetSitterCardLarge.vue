@@ -35,8 +35,8 @@ const cardClasses = computed(() => {
     : "flex flex-row w-[848px] h-[216px] p-4 rounded-2xl items-center gap-10";
   
   const state = props.selected 
-    ? "border-brand-orange-300 shadow-md ring-1 ring-brand-orange-300"
-    : "border-brand-gray-100 hover:border-brand-orange-300";
+    ? "border-2 border-brand-orange-500"
+    : "border border-brand-gray-100 hover:border-brand-orange-300";
 
   return `${base} ${layout} ${state}`;
 });
