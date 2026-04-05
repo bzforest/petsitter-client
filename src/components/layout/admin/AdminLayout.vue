@@ -8,7 +8,7 @@ import AdminSidebar from "@/components/layout/admin/AdminSidebar.vue";
     <AdminSidebar />
 
     <!-- Page content -->
-    <main class="flex-1 overflow-auto p-6">
+    <main class="flex-1 overflow-auto p-6 bg-brand-gray-50">
       <RouterView />
     </main>
   </div>

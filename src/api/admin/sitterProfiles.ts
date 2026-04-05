@@ -6,6 +6,8 @@ export interface SitterProfile {
   id: number
   userId: number
   email: string
+  fullName: string | null
+  profileImage: string | null
   bio: string | null
   pricePerHour: number | null
   experience: number | null
@@ -17,7 +19,7 @@ export interface SitterProfile {
   idNumber: string | null
   servicesDescription: string | null
   dateOfBirth: string | null
-  status: SitterStatus
+  status: SitterStatus | null
   isApproved: boolean
   ratingAvg: number | null
   rejectReason: string | null
@@ -49,6 +51,25 @@ export interface GetSitterProfilesParams {
   direction?: 'asc' | 'desc'
   minPrice?: number
   maxPrice?: number
+  query?: string
+  status?: SitterStatus
+}
+
+export async function getSitterProfileById(id: number): Promise<SitterProfile> {
+  const { data } = await apiClient.get<SitterProfile>(`/api/sitter-profiles/${id}`)
+  return data
+}
+
+export async function approveSitter(id: number): Promise<SitterProfile> {
+  const { data } = await apiClient.patch<SitterProfile>(`/api/sitter-profiles/${id}/approve`)
+  return data
+}
+
+export async function rejectSitter(id: number, reason: string): Promise<SitterProfile> {
+  const { data } = await apiClient.patch<SitterProfile>(`/api/sitter-profiles/${id}/reject`, {
+    reason,
+  })
+  return data
 }
 
 export async function getSitterProfiles(
@@ -57,11 +78,13 @@ export async function getSitterProfiles(
   const { data } = await apiClient.get<SitterProfilePage>('/api/sitter-profiles', {
     params: {
       page: params.page ?? 0,
-      size: params.size ?? 20,
+      size: params.size ?? 10,
       sortBy: params.sortBy ?? 'id',
       direction: params.direction ?? 'asc',
       ...(params.minPrice !== undefined && { minPrice: params.minPrice }),
       ...(params.maxPrice !== undefined && { maxPrice: params.maxPrice }),
+      ...(params.query?.trim() && { query: params.query.trim() }),
+      ...(params.status && { status: params.status }),
     },
   })
   return data

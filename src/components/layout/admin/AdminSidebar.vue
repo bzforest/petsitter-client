@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, defineComponent, h } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import adminLogo from "@/assets/logo/AdminSidebar-logo.svg";
 import Profile from "@/components/icons/Profile.vue";
@@ -10,7 +10,14 @@ import IconBell from "@/components/icons/IconBell.vue";
 
 // ── Store ──────────────────────────────────────────────────
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
+
+// ตรวจ active โดยเช็ค path ปัจจุบันว่า startsWith item path
+// วิธีนี้ทำให้ /admin/pet-sitters/8 ยังคง active "Pet Sitter" ไว้
+function isActive(to: string): boolean {
+  return route.path.startsWith(to);
+}
 
 const adminEmail = computed(() => authStore.email ?? "admin@sitter.com");
 const adminInitial = computed(() =>
@@ -86,14 +93,18 @@ const navItems = [
         v-for="item in navItems"
         :key="item.to"
         :to="item.to"
-        class="flex items-center gap-3 px-5 py-5 text-white/40 hover:text-white/80 hover:bg-white/15 transition-all duration-150 group relative"
-        active-class="!text-white !bg-white/15 sidebar-active"
+        class="flex items-center gap-3 px-5 py-5 transition-all duration-150 relative"
+        :class="
+          isActive(item.to)
+            ? 'text-white bg-white/6 sidebar-active'
+            : 'text-white/40 hover:text-white/80 hover:bg-white/15'
+        "
       >
-        <!-- Active indicator -->
+        <!-- Active indicator bar -->
         <span
-          class="absolute left-0 top-1/4 h-1/2 w-[3px] bg-orange-500 rounded-r-full opacity-0 transition-opacity duration-150 group-[.sidebar-active]:opacity-100"
-        >
-        </span>
+          class="absolute left-0 top-1/4 h-1/2 w-[3px] bg-orange-500 rounded-r-full transition-opacity duration-150"
+          :class="isActive(item.to) ? 'opacity-100' : 'opacity-0'"
+        />
 
         <!-- Icon -->
         <span class="shrink-0 flex items-center justify-center">
@@ -101,9 +112,7 @@ const navItems = [
         </span>
 
         <!-- Label -->
-        <span 
-          class="body-1 font-medium whitespace-nowrap overflow-hidden transition-all duration-200"
-        >
+        <span class="body-1 font-medium whitespace-nowrap overflow-hidden transition-all duration-200">
           {{ item.label }}
         </span>
       </RouterLink>
