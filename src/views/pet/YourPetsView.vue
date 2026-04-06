@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+// import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import apiClient from '@/api/axios'
 
@@ -9,7 +9,7 @@ import Button from '@/components/ui/Button.vue'
 import PetFormModal from '@/components/pet/PetFormModal.vue'
 import { Plus, Pencil, Trash2 } from 'lucide-vue-next'
 
-const router = useRouter()
+// const router = useRouter()
 const authStore = useAuthStore()
 
 const pets = ref<any[]>([])
