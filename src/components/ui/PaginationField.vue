@@ -18,6 +18,10 @@ const emit = defineEmits<{
 const goToPage = (page: number) => {
     if (page >= 1 && page <= props.totalPages) {
         emit('update:currentPage' , page)
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        })
     }
 }
 
