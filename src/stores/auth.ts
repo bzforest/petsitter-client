@@ -134,7 +134,7 @@ export const useAuthStore = defineStore('auth', () => {
   const isUser = computed(() => role.value === 'USER')
 
   function getDashboardRoute(): string {
-    if (role.value === 'ADMIN') return '/dashboard/admin'
+    if (role.value === 'ADMIN') return '/admin/pet-owners'
     if (role.value === 'SITTER') return '/dashboard/sitter'
     if (role.value === 'USER') return '/dashboard/owner'
     return '/login'
