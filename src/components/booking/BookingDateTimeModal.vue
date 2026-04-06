@@ -7,12 +7,18 @@ import Button from '../ui/Button.vue'
 import DatePickerField from '../ui/DatePickerField.vue'
 import SelectField from '../ui/SelectField.vue'
 
-const props = defineProps<{
-  sitterId: number
-}>()
+const props = withDefaults(defineProps<{
+  sitterId: number;
+  mode?: 'create' | 'update';
+  isSubmitting?: boolean;
+}>(), {
+  mode: 'create',
+  isSubmitting: false
+})
 
 const emit = defineEmits<{
-  (e: 'close'): void
+  (e: 'close'): void;
+  (e: 'confirm'): void;
 }>()
 
 const router = useRouter()
@@ -110,23 +116,30 @@ const handleContinue = () => {
   // Save to Pinia Store
   bookingStore.setBookingDateTime(props.sitterId, date.value, startTime.value, endTime.value)
   
-  // Close the modal
-  emit('close')
-  
-  // Navigate to full page booking flow
-  router.push(`/sitter/${props.sitterId}/booking`)
+  if (props.mode === 'update') {
+    emit('confirm')
+  } else {
+    // Navigate to full page booking flow
+    router.push(`/sitter/${props.sitterId}/booking`)
+    emit('close')
+  }
 }
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+  <div class="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
     <div class="bg-white rounded-2xl w-full max-w-xl animate-in fade-in zoom-in-95 duration-200">
       
       <!-- Header -->
       <div class="flex justify-between items-center p-6 border-b border-brand-gray-100">
-        <h3 class="headline-3 text-brand-gray-600">Booking</h3>
-        <button @click="$emit('close')" class="text-brand-gray-500 hover:text-brand-gray-700 transition">
-          <X class="w-6 h-6 cursor-pointer" />
+        <h3 class="headline-3 text-brand-gray-600">{{ mode === 'update' ? 'Update Booking' : 'Booking' }}</h3>
+        <button 
+          @click="$emit('close')" 
+          :disabled="isSubmitting"
+          :class="[isSubmitting ? 'opacity-30 cursor-not-allowed' : 'hover:text-brand-gray-700 cursor-pointer']"
+          class="text-brand-gray-500 transition"
+        >
+          <X class="w-6 h-6" />
         </button>
       </div>
       
@@ -134,7 +147,7 @@ const handleContinue = () => {
       <div class="p-6">
         <p class="body-1 text-brand-gray-500 mb-6">Select date and time you want to schedule the service.</p>
         
-        <div class="flex flex-col gap-5">
+        <div class="flex flex-col gap-5" :class="{'opacity-60 pointer-events-none': isSubmitting}">
           <!-- Date Field -->
           <div class="relative">
             <DatePickerField
@@ -174,12 +187,13 @@ const handleContinue = () => {
 
         <!-- Continue Button -->
         <Button 
-          :disabled="!date || !startTime || !endTime"
+          :disabled="!date || !startTime || !endTime || isSubmitting"
+          :loading="isSubmitting"
           @click="handleContinue" 
           variant="primary"
           class="w-full mt-8 rounded-full cursor-pointer"
         >
-          Continue
+          {{ mode === 'update' ? 'Update' : 'Continue' }}
         </Button>
       </div>
 

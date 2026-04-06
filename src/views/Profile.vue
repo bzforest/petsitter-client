@@ -131,19 +131,24 @@
       <h2 class="body-1 font-bold text-brand-gray-900">Pet Sitter</h2>
 
       <InputField label="Pet sitter name (Trade name)*" v-model="form.tradeName" />
+      <p v-if="errors.tradeName" class="text-brand-red-500 body-3 mt-1">{{ errors.tradeName }}</p>
 
       <MultiSelectField
-        label="Pet type"
+        label="Pet type*"
         placeholder="Select pet types"
         :options="petTypeOptions"
         v-model="petTypesSelected"
       />
+      <p v-if="errors.petTypes" class="text-brand-red-500 body-3 mt-1">{{ errors.petTypes }}</p>
 
       <TextareaField
-        label="Services (Describe all of your service for pet sitting)"
-        v-model="form.services"
+        label="Services (Describe all of your service for pet sitting)*"
+        v-model="form.servicesDescription"
       />
-      <TextareaField label="My Place (Describe your place)" v-model="form.place" />
+      <p v-if="errors.servicesDescription" class="text-brand-red-500 body-3 mt-1">{{ errors.servicesDescription }}</p>
+
+      <TextareaField label="My Place (Describe your place)*" v-model="form.place" />
+      <p v-if="errors.place" class="text-brand-red-500 body-3 mt-1">{{ errors.place }}</p>
 
       <div class="space-y-2">
         <p class="body-3 text-brand-gray-500">Image Gallery (maximum 10 images)</p>
@@ -217,16 +222,28 @@
         </div>
       </div>
 
-      <InputField label="Address Detail" v-model="form.address" />
+      <InputField label="Address Detail*" v-model="form.address" />
+      <p v-if="errors.address" class="text-brand-red-500 body-3 mt-1">{{ errors.address }}</p>
 
       <div class="grid grid-cols-2 gap-4">
-        <InputField label="District" v-model="form.district" />
-        <InputField label="Sub-district" v-model="form.subDistrict" />
+        <div>
+          <InputField label="District*" v-model="form.district" />
+          <p v-if="errors.district" class="text-brand-red-500 body-3 mt-1">{{ errors.district }}</p>
+        </div>
+        <div>
+          <InputField label="Sub-district" v-model="form.subDistrict" />
+        </div>
       </div>
 
       <div class="grid grid-cols-2 gap-4">
-        <InputField label="Province" v-model="form.province" />
-        <InputField label="Post Code" v-model="form.postCode" />
+        <div>
+          <InputField label="Province*" v-model="form.province" />
+          <p v-if="errors.province" class="text-brand-red-500 body-3 mt-1">{{ errors.province }}</p>
+        </div>
+        <div>
+          <InputField label="Post Code*" v-model="form.postCode" />
+          <p v-if="errors.postCode" class="text-brand-red-500 body-3 mt-1">{{ errors.postCode }}</p>
+        </div>
       </div>
 
       <div id="map" class="h-[300px] rounded-xl overflow-hidden"></div>
@@ -279,7 +296,7 @@ const form = ref({
   intro: "",
   tradeName: "",
   petTypes: "",
-  services: "",
+  servicesDescription: "",
   place: "",
   address: "",
   district: "",
@@ -307,6 +324,15 @@ const errors = ref({
   fullName: "",
   email: "",
   phone: "",
+  tradeName: "",
+  petTypes: "",
+  servicesDescription: "",
+  place: "",
+  address: "",
+  district: "",
+  subDistrict: "",
+  province: "",
+  postCode: "",
 });
 
 const MSG_PHONE_10_DIGITS = "Phone number must be exactly 10 digits.";
@@ -470,7 +496,7 @@ onMounted(async () => {
     form.value.intro = data.bio || "";
     form.value.tradeName = data.tradeName || "";
     form.value.petTypes = data.petTypes || "";
-    form.value.services = data.services || "";
+    form.value.servicesDescription = data.servicesDescription || "";
     form.value.place = data.placeDescription || "";
     form.value.address = data.addressLine || "";
     form.value.district = data.district || "";
@@ -779,6 +805,33 @@ const handleSave = async () => {
     return;
   }
 
+  // 🔥 VALIDATE REQUIRED FIELDS (NEW)
+  let hasError = false;
+  
+  // Clear previous errors
+  errors.value.tradeName = "";
+  errors.value.petTypes = "";
+  errors.value.servicesDescription = "";
+  errors.value.place = "";
+  errors.value.address = "";
+  errors.value.district = "";
+  errors.value.province = "";
+  errors.value.postCode = "";
+
+  if (!form.value.tradeName?.trim()) { errors.value.tradeName = "Trade name is required"; hasError = true; }
+  if (!form.value.petTypes?.trim()) { errors.value.petTypes = "Please select at least one pet type"; hasError = true; }
+  if (!form.value.servicesDescription?.trim()) { errors.value.servicesDescription = "Services description is required"; hasError = true; }
+  if (!form.value.place?.trim()) { errors.value.place = "Place description is required"; hasError = true; }
+  if (!form.value.address?.trim()) { errors.value.address = "Address detail is required"; hasError = true; }
+  if (!form.value.district?.trim()) { errors.value.district = "District is required"; hasError = true; }
+  if (!form.value.province?.trim()) { errors.value.province = "Province is required"; hasError = true; }
+  if (!form.value.postCode?.trim()) { errors.value.postCode = "Post code is required"; hasError = true; }
+
+  if (hasError) {
+    showToast("Please fill in all required fields", "error");
+    return;
+  }
+
   try {
     loading.value = true;
     await updateProfile(sitterId.value, {
@@ -791,7 +844,7 @@ const handleSave = async () => {
       email: form.value.email.trim(),
       tradeName: form.value.tradeName,
       petTypes: form.value.petTypes,
-      services: form.value.services,
+      servicesDescription: form.value.servicesDescription,
       placeDescription: form.value.place,
       latitude: form.value.latitude,
       longitude: form.value.longitude,

@@ -74,7 +74,7 @@ const formatTime = (timeStr: string) => {
     </div>
 
     <main
-      class="flex-1 container mx-auto px-4 py-20 flex flex-col items-center justify-center z-10"
+      class="flex-1 container mx-auto lg:px-4 pb-20 lg:py-20 flex flex-col items-center justify-center z-10"
     >
       <!-- Loading State -->
       <div v-if="isLoading" class="flex justify-center py-20">
@@ -86,7 +86,7 @@ const formatTime = (timeStr: string) => {
       <!-- Success Card -->
       <div
         v-else-if="booking"
-        class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl shadow-brand-gray-100 overflow-hidden animate-in fade-in zoom-in duration-500"
+        class="w-full max-w-2xl bg-white lg:rounded-3xl shadow-2xl shadow-brand-gray-100 overflow-hidden animate-in fade-in zoom-in duration-500"
       >
         <!-- Header -->
         <div class="bg-black p-6 text-center">
@@ -106,6 +106,22 @@ const formatTime = (timeStr: string) => {
             <p class="body-2 text-brand-gray-300">
               Transaction No.: {{ booking.id }}
             </p>
+            <!-- [DEBUG: TEMPORARY] -->
+            <!-- <div class="mt-4 p-2 border border-red-500 rounded bg-red-50">
+              <p class="text-sm font-bold text-red-600">
+                DEBUG INFO (Temporary):
+              </p>
+              <p class="text-sm text-black">
+                Payment Method:
+                <span class="font-bold underline">{{
+                  booking.paymentMethod
+                }}</span>
+              </p>
+              <p class="text-sm text-black">
+                Booking Status:
+                <span class="font-bold underline">{{ booking.status }}</span>
+              </p>
+            </div> -->
           </div>
 
           <!-- Sitter Info -->
@@ -129,7 +145,8 @@ const formatTime = (timeStr: string) => {
             <div class="space-y-1">
               <p class="body-3 text-brand-gray-500 font-bold">Date & Time:</p>
               <p class="body-2 text-brand-gray-700 font-bold">
-                {{ formatDate(booking.startDate) }} | {{ formatTime(booking.startTime) }} -
+                {{ formatDate(booking.startDate) }} |
+                {{ formatTime(booking.startTime) }} -
                 {{ formatTime(booking.endTime) }}
               </p>
             </div>
@@ -166,7 +183,7 @@ const formatTime = (timeStr: string) => {
         <Button
           variant="secondary"
           class="rounded-full px-10 py-4 cursor-pointer"
-          @click="router.push('/dashboard/owner')"
+          @click="router.push('/history/owner')"
         >
           Booking Detail
         </Button>
