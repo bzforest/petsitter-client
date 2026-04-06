@@ -76,8 +76,8 @@ const navItems: { to: string; label: string; icon: Component; showDot?: boolean 
   { to: "/payout", label: "Payout Option", icon: CreditCard },
 ];
 
-function handleLogout() {
-  auth.logout();
+async function handleLogout() {
+  await auth.logout();
   router.push({ name: "login" });
 }
 </script>

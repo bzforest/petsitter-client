@@ -2,6 +2,7 @@
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import GoogleRoleModal from "@/components/auth/GoogleRoleModal.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -13,6 +14,8 @@ const phone = ref("");
 const password = ref("");
 const showPassword = ref(false);
 const isLoading = ref(false);
+const isGoogleLoading = ref(false);
+const showRoleModal = ref(false);
 
 // Field-level errors from API สำหรับการแสดงข้อผิดพลาดจาก API
 const errors = ref<{
@@ -72,6 +75,25 @@ function parseApiErrors(err: unknown) {
   }
 
   errors.value.general = data.message ?? "Registration failed.";
+}
+
+// เปิด modal พร้อม pre-select role จาก toggle ที่เลือกไว้
+function handleGoogleRegister() {
+  errors.value = {};
+  showRoleModal.value = true;
+}
+
+// user กด confirm ใน modal (อาจเปลี่ยน role จาก toggle ก็ได้)
+async function onRoleConfirmed(role: 'USER' | 'SITTER') {
+  isGoogleLoading.value = true;
+  try {
+    await authStore.loginWithGoogle(role);
+    // browser จะ redirect ออกไปหน้า Google
+  } catch (err) {
+    errors.value.general = 'ไม่สามารถเชื่อมต่อกับ Google ได้ กรุณาลองใหม่';
+    showRoleModal.value = false;
+    isGoogleLoading.value = false;
+  }
 }
 
 async function handleSubmit() {
@@ -300,9 +322,12 @@ async function handleSubmit() {
           </button>
           <button
             type="button"
-            class="flex flex-1 items-center justify-center gap-2 rounded-full bg-brand-gray-50 py-3 px-4 text-sm font-semibold text-brand-gray-900 transition-colors hover:bg-brand-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange-700"
+            @click="handleGoogleRegister"
+            :disabled="isGoogleLoading || isLoading"
+            class="flex flex-1 items-center justify-center gap-2 rounded-full bg-brand-gray-50 py-3 px-4 text-sm font-semibold text-brand-gray-900 transition-colors hover:bg-brand-gray-100 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange-700"
           >
             <svg
+              v-if="!isGoogleLoading"
               class="h-5 w-5 shrink-0"
               viewBox="0 0 24 24"
               aria-hidden="true"
@@ -325,7 +350,8 @@ async function handleSubmit() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            Gmail
+            <div v-else class="h-5 w-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin shrink-0" />
+            {{ isGoogleLoading ? 'Redirecting...' : 'Gmail' }}
           </button>
         </div>
       </div>
@@ -342,4 +368,13 @@ async function handleSubmit() {
       </p>
     </div>
   </div>
+
+  <!-- Role selection modal — pre-select จาก toggle ที่เลือกไว้บนหน้า Register -->
+  <GoogleRoleModal
+    v-if="showRoleModal"
+    :pre-selected-role="selectedRole"
+    :is-loading="isGoogleLoading"
+    @confirm="onRoleConfirmed"
+    @cancel="showRoleModal = false"
+  />
 </template>

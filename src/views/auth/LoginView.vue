@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import GoogleRoleModal from "@/components/auth/GoogleRoleModal.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -11,6 +12,8 @@ const password = ref("");
 const rememberMe = ref(false);
 const showPassword = ref(false);
 const isLoading = ref(false);
+const isGoogleLoading = ref(false);
+const showRoleModal = ref(false);
 const errors = ref<{ email?: string; password?: string; general?: string }>({});
 
 function clearError(field: keyof typeof errors.value) {
@@ -49,6 +52,25 @@ async function handleSubmit() {
     parseApiErrors(err);
   } finally {
     isLoading.value = false;
+  }
+}
+
+// เปิด modal ให้เลือก role ก่อน redirect ไป Google
+function handleGoogleLogin() {
+  errors.value = {};
+  showRoleModal.value = true;
+}
+
+// user เลือก role แล้วกด confirm ใน modal
+async function onRoleConfirmed(role: 'USER' | 'SITTER') {
+  isGoogleLoading.value = true;
+  try {
+    await authStore.loginWithGoogle(role);
+    // browser จะ redirect ออกไปหน้า Google — ไม่มีโค้ดทำงานต่อจากนี้
+  } catch (err) {
+    errors.value.general = 'ไม่สามารถเชื่อมต่อกับ Google ได้ กรุณาลองใหม่';
+    showRoleModal.value = false;
+    isGoogleLoading.value = false;
   }
 }
 </script>
@@ -248,9 +270,12 @@ async function handleSubmit() {
           </button>
           <button
             type="button"
-            class="flex flex-1 items-center justify-center gap-2 rounded-full bg-gray-100 py-3 px-4 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500"
+            @click="handleGoogleLogin"
+            :disabled="isGoogleLoading || isLoading"
+            class="flex flex-1 items-center justify-center gap-2 rounded-full bg-gray-100 py-3 px-4 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-200 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500"
           >
             <svg
+              v-if="!isGoogleLoading"
               class="h-5 w-5 shrink-0"
               viewBox="0 0 24 24"
               aria-hidden="true"
@@ -273,7 +298,8 @@ async function handleSubmit() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            Gmail
+            <div v-else class="h-5 w-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin shrink-0" />
+            {{ isGoogleLoading ? 'Redirecting...' : 'Gmail' }}
           </button>
         </div>
       </div>
@@ -290,4 +316,12 @@ async function handleSubmit() {
       </p>
     </div>
   </div>
+
+  <!-- Role selection modal — แสดงก่อน redirect ไป Google -->
+  <GoogleRoleModal
+    v-if="showRoleModal"
+    :is-loading="isGoogleLoading"
+    @confirm="onRoleConfirmed"
+    @cancel="showRoleModal = false"
+  />
 </template>

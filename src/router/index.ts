@@ -41,6 +41,13 @@ const router = createRouter({
       component: () => import("@/views/auth/LoginView.vue"),
       meta: { guestOnly: true },
     },
+    // Google OAuth callback — Supabase redirect กลับมาที่นี่หลัง Google login
+    // ไม่ใส่ guestOnly เพราะ Supabase จะส่ง token มาใน URL fragment
+    {
+      path: "/auth/callback",
+      name: "auth-callback",
+      component: () => import("@/views/auth/AuthCallback.vue"),
+    },
 
     // Protected dashboard routes
     // TEST ONLY
