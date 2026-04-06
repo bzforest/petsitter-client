@@ -1,17 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+// import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import apiClient from '@/api/axios'
 
-import Navbar from '@/components/layout/Navbar.vue'
-import Footer from '@/components/layout/Footer.vue'
 import Petcard from '@/components/ui/Petcard.vue'
 import Button from '@/components/ui/Button.vue'
 import PetFormModal from '@/components/pet/PetFormModal.vue'
-import { Plus, ChevronLeft, Pencil, Trash2 } from 'lucide-vue-next'
+import { Plus, Pencil, Trash2 } from 'lucide-vue-next'
 
-const router = useRouter()
+// const router = useRouter()
 const authStore = useAuthStore()
 
 const pets = ref<any[]>([])
@@ -57,22 +55,21 @@ const deletePet = async (id: number) => {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col bg-brand-gray-50">
-    <Navbar />
+  <div class="min-h-screen flex flex-col">
 
-    <main class="flex-1 container mx-auto px-4 py-12 max-w-6xl">
+    <main class="flex-1 container mx-auto px-4 py-5 max-w-6xl">
       <!-- Header -->
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div>
-          <button @click="router.back()" class="flex items-center gap-2 text-brand-gray-400 hover:text-brand-gray-600 transition mb-4 outline-none">
+          <!-- <button @click="router.back()" class="flex items-center gap-2 text-brand-gray-400 hover:text-brand-gray-600 transition mb-4 outline-none">
             <ChevronLeft class="w-5 h-5" />
             Back
-          </button>
-          <h1 class="headline-1 text-brand-gray-900">Your Pet</h1>
-          <p class="body-1 text-brand-gray-500">Manage your beloved pets for better services.</p>
+          </button> -->
+          <h1 class="headline-3 text-brand-black">Your Pet</h1>
+          <!-- <p class="body-1 text-brand-gray-500">Manage your beloved pets for better services.</p> -->
         </div>
 
-        <Button variant="primary" class="rounded-full px-8 py-3 flex items-center gap-2 shadow-lg shadow-brand-orange-500/20" @click="openAddModal">
+        <Button variant="primary" class="rounded-full px-8 py-3 flex items-center gap-2 shadow-lg shadow-brand-orange-500/20 cursor-pointer hover:scale-105" @click="openAddModal">
           <Plus class="w-5 h-5" />
           Add New Pet
         </Button>
@@ -105,10 +102,10 @@ const deletePet = async (id: number) => {
           
           <!-- Actions Overlay -->
           <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button @click="openEditModal(pet)" class="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md text-brand-gray-600 hover:text-brand-orange-500 transition-colors">
+            <button @click="openEditModal(pet)" class="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md text-brand-gray-600 hover:text-brand-orange-500 transition-colors cursor-pointer hover:scale-[1.05]">
               <Pencil class="w-4 h-4" />
             </button>
-            <button @click="deletePet(pet.id)" class="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md text-brand-gray-600 hover:text-red-500 transition-colors">
+            <button @click="deletePet(pet.id)" class="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md text-brand-gray-600 hover:text-red-500 transition-colors cursor-pointer hover:scale-[1.05]">
               <Trash2 class="w-4 h-4" />
             </button>
           </div>
@@ -116,7 +113,6 @@ const deletePet = async (id: number) => {
       </div>
     </main>
 
-    <Footer />
 
     <!-- Modals -->
     <PetFormModal 

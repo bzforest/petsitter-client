@@ -9,6 +9,14 @@ import History from "@/components/icons/History.vue";
 import Logout from "@/components/icons/Logout.vue";
 import HamburgerMenu from "@/components/icons/HamburgerMenu.vue";
 
+// 🟢 1. Import Store และ Router เข้ามา
+import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
+
+// 🟢 2. เรียกใช้งาน Store และ Router
+const authStore = useAuthStore()
+const router = useRouter()
+
 // --- Custom Directive: ปิด dropdown เมื่อคลิกนอก element ---
 const vClickOutside = {
   mounted(el: any, binding: { value: () => void }) {
@@ -24,13 +32,6 @@ const vClickOutside = {
   },
 };
 
-// --- Mock Auth State (เปลี่ยนเป็น real auth ทีหลัง) ---
-const isLoggedIn = ref(false);
-const user = ref({
-  name: "John Doe",
-  avatar: "https://i.pravatar.cc/150?img=8",
-});
-
 // --- Dropdown & Mobile Menu ---
 const showDropdown = ref(false);
 const showMobileMenu = ref(false);
@@ -43,13 +44,11 @@ function closeDropdown() {
   showDropdown.value = false;
 }
 
-function logout() {
-  isLoggedIn.value = false;
+// 🟢 3. สร้างฟังก์ชัน Logout ของจริง
+function handleLogout() {
+  authStore.logout() // เคลียร์ Token และ State ใน Store
   showDropdown.value = false;
-}
-
-function mockLogin() {
-  isLoggedIn.value = true;
+  router.push('/login') // เด้งกลับไปหน้า Login
 }
 </script>
 
@@ -70,7 +69,7 @@ function mockLogin() {
       <!-- Desktop Menu -->
       <div class="hidden md:flex items-center gap-10">
         <!-- ยังไม่ได้ Login -->
-        <template v-if="!isLoggedIn">
+        <template v-if="!authStore.isLoggedIn">
           <RouterLink
             to="/register"
             class="body-1 text-brand-black hover:text-brand-orange-700 transition sm:px-5"
@@ -80,7 +79,6 @@ function mockLogin() {
           <RouterLink
             to="/login"
             class="body-1 text-brand-black hover:text-brand-orange-700 transition"
-            @click="mockLogin"
           >
             Login
           </RouterLink>
@@ -114,8 +112,8 @@ function mockLogin() {
                 class="w-12 h-12 rounded-full overflow-hidden border-2 border-transparent hover:border-brand-orange-500 transition"
               >
                 <img
-                  :src="user.avatar"
-                  :alt="user.name"
+                  src="https://i.pravatar.cc/150?img=8"
+                  alt="User Profile"
                   class="w-full h-full object-cover"
                 />
               </button>
@@ -161,7 +159,7 @@ function mockLogin() {
                   <hr class="border-brand-gray-100 my-1" />
 
                   <button
-                    @click="logout"
+                    @click="handleLogout"
                     class="flex items-center gap-3 px-5 py-3 body-2 text-brand-black hover:text-brand-gray-500 transition"
                   >
                     <Logout />
@@ -199,7 +197,7 @@ function mockLogin() {
         v-if="showMobileMenu"
         class="md:hidden bg-white border-t border-brand-gray-100 px-6 py-4 space-y-3"
       >
-        <template v-if="!isLoggedIn">
+        <template v-if="!authStore.isLoggedIn">
           <RouterLink
             to="/register"
             class="block body-2 text-brand-black hover:text-brand-orange-700 transition py-2"
@@ -209,7 +207,6 @@ function mockLogin() {
           <RouterLink
             to="/login"
             class="block body-2 text-brand-black hover:text-brand-orange-700 transition py-2"
-            @click="mockLogin"
             >Login
           </RouterLink>
         </template>
@@ -241,7 +238,7 @@ function mockLogin() {
             </RouterLink>
             <hr class="border-brand-gray-100 my-1 -mx-10" />
             <button
-              @click="logout"
+              @click="handleLogout"
               class="flex items-center gap-3 body-2 text-brand-black hover:text-brand-gray-500 transition"
             >
               <Logout />

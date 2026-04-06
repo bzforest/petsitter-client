@@ -1,7 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router";
 import SitterLayout from "@/components/layout/SitterLayout.vue";
-
 import { useAuthStore, type Role } from "@/stores/auth";
+import AccountLayout from '@/views/account/AccountLayout.vue'
+import ProfileView from '@/views/account/ProfileView.vue'
+import YourPetsView from "@/views/pet/YourPetsView.vue";
 
 // Define the router
 const router = createRouter({
@@ -44,10 +46,17 @@ const router = createRouter({
     // TEST ONLY
     // TODO: Remove this after testing
     {
-      path: "/dashboard/owner",
-      name: "dashboard-owner",
-      component: () => import("@/views/dashboard/OwnerDashboard.vue"),
-      meta: { requiresAuth: true, roles: ["USER"] },
+      path: '/dashboard/owner',
+      name: 'dashboard-owner',
+      component: () => import('@/views/dashboard/OwnerDashboard.vue'),
+      redirect: '/account/profile',
+      children: [
+        {
+          path: '/account/profile',
+          component: ProfileView
+        }
+      ],
+      meta: { requiresAuth: true, roles: ['USER'] },
     },
     {
       path: "/dashboard/sitter",
@@ -144,6 +153,23 @@ const router = createRouter({
       path: "/pet-sitter-detail",
       name: "PetSitterDetail",
       component: () => import("@/views/PetSitterDetail.vue"),
+    },
+    {
+      path: '/account',
+      component: AccountLayout,
+      redirect: '/account/profile',
+      children: [
+        {
+          path: 'profile',
+          name: 'profile',
+          component: ProfileView
+        },
+        {
+          path: 'yourpet',
+          name: 'yourpet',
+          component: YourPetsView
+        }
+      ]
     },
   ],
 });

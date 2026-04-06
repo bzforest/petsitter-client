@@ -1,26 +1,32 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref , watch } from 'vue'
 import { UserRound } from 'lucide-vue-next';
 
-defineProps<{
-    variant?: 'square' | 'circle'
+const props = defineProps<{
+    variant?: 'square' | 'circle'  // default = square
+    initialImage?: string
 }>()
 
 const emit = defineEmits<{
-    (e: 'change', event: Event): void
+    (e: 'update:file', file: File | null): void
 }>()
 
-const previewUrl = ref<string | null>(null)
+const previewUrl = ref<string | null>(props.initialImage || null)
+
+watch(() => props.initialImage, (newVal) => {
+    if (newVal) previewUrl.value = newVal
+})
 
 function onFileChange(e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0]
     if (!file) return
     previewUrl.value = URL.createObjectURL(file)
-    emit('change', e)
+    emit('update:file', file)
 }
 
 function removeImage() {
     previewUrl.value = null
+    emit('update:file', null)
 }
 </script>
 
