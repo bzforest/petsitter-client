@@ -3,6 +3,7 @@ import SitterLayout from "@/components/layout/SitterLayout.vue";
 import { useAuthStore, type Role } from "@/stores/auth";
 import AccountLayout from '@/views/account/AccountLayout.vue'
 import ProfileView from '@/views/account/ProfileView.vue'
+import YourPetsView from "@/views/pet/YourPetsView.vue";
 
 // Define the router
 const router = createRouter({
@@ -162,8 +163,12 @@ const router = createRouter({
           path: 'profile',
           name: 'profile',
           component: ProfileView
+        },
+        {
+          path: 'yourpet',
+          name: 'yourpet',
+          component: YourPetsView
         }
-        // อนาคตค่อยเอาหน้า Your Pet กะ Booking มาต่อตรงนี้
       ]
     },
   ],

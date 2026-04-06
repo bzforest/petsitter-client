@@ -8,7 +8,7 @@ const route = useRoute()
 // เมนูสำหรับ Sidebar
 const menuItems = [
   { name: 'Profile', path: '/account/profile', icon: 'User' }, // อนาคตค่อยใส่ Icon
-  { name: 'Your Pet', path: '/account/pets', icon: 'PawPrint' },
+  { name: 'Your Pet', path: '/account/yourpet', icon: 'PawPrint' },
   { name: 'Booking History', path: '/account/bookings', icon: 'List' }
 ]
 </script>
