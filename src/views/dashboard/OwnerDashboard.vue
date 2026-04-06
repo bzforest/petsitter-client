@@ -1,36 +1,10 @@
 <script setup lang="ts">
-import { useAuthStore } from '@/stores/auth'
-import { useRouter } from 'vue-router'
-
-const authStore = useAuthStore()
-const router = useRouter()
-
-function handleLogout() {
-  authStore.logout()
-  router.push('/login')
-}
+import AccountLayout from '@/views/account/AccountLayout.vue'
+import ProfileView from '@/views/account/ProfileView.vue'
 </script>
 
 <template>
-  <div class="min-h-screen bg-orange-50 flex flex-col items-center justify-center gap-6">
-    <div class="bg-white rounded-2xl shadow-sm px-10 py-8 text-center max-w-md w-full">
-      <div class="text-5xl mb-4">🐾</div>
-      <h1 class="text-2xl font-bold text-gray-900 mb-1">Owner Dashboard</h1>
-      <p class="text-gray-500 text-sm mb-2">Welcome back, {{ authStore.email }}!</p>
-      <span
-        class="inline-block bg-orange-100 text-orange-600 text-xs font-semibold px-3 py-1 rounded-full mb-6"
-      >
-        {{ authStore.role }}
-      </span>
-      <p class="text-gray-400 text-sm mb-8">
-        This is a placeholder for the Owner dashboard. More features coming soon.
-      </p>
-      <button
-        @click="handleLogout"
-        class="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full transition-colors text-sm"
-      >
-        Log Out
-      </button>
-    </div>
-  </div>
+  <AccountLayout>
+    <ProfileView />
+  </AccountLayout>
 </template>
