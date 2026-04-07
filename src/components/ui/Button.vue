@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { Loader2 } from 'lucide-vue-next';
 
 interface Props {
   variant?: 'primary' | 'secondary' | 'ghost' | 'social' | 'icon';
   disabled?: boolean;
+  loading?: boolean;
   type?: 'button' | 'submit' | 'reset';
 }
 
 const props = withDefaults(defineProps<Props>(), {
   variant: 'primary',
   disabled: false,
+  loading: false,
   type: 'button'
 });
 
@@ -38,7 +41,8 @@ const buttonClasses = computed(() => {
     ? 'w-12 h-12 rounded-full p-0 flex' 
     : 'px-6 py-3 rounded-[16px] gap-2.5';
     
-  const style = props.disabled ? disabledClasses : variantClasses[props.variant];
+  // ถ้ากำลังโหลด หรือ ปิดใช้งาน ให้ใช้ disabledClasses
+  const style = (props.disabled || props.loading) ? disabledClasses : variantClasses[props.variant];
   
   return [base, shape, style].join(' ');
 });
@@ -48,24 +52,29 @@ const buttonClasses = computed(() => {
   <button 
     :type="type" 
     :class="buttonClasses" 
-    :disabled="disabled"
+    :disabled="disabled || loading"
   >
-    <!-- Left Icon Slot (ใส่ไอคอนจาก Lucide หรืออื่นๆ) -->
-    <div v-if="$slots['left-icon']" class="flex items-center justify-center transition-transform shrink-0">
-      <slot name="left-icon"></slot>
-    </div>
-    
-    <!-- Content Slot (ข้อความหรือเนื้อหาอื่นๆ) -->
-    <span v-if="variant !== 'icon'" class="flex items-center">
-      <slot></slot>
-    </span>
+    <!-- Loading Spinner -->
+    <Loader2 v-if="loading" class="w-5 h-5 animate-spin" />
 
-    <!-- Default Slot for Icon Variant -->
-    <slot v-if="variant === 'icon'"></slot>
+    <template v-else>
+      <!-- Left Icon Slot -->
+      <div v-if="$slots['left-icon']" class="flex items-center justify-center transition-transform shrink-0">
+        <slot name="left-icon"></slot>
+      </div>
+      
+      <!-- Content Slot -->
+      <span v-if="variant !== 'icon'" class="flex items-center">
+        <slot></slot>
+      </span>
 
-    <!-- Right Icon Slot -->
-    <div v-if="$slots['right-icon']" class="flex items-center justify-center transition-transform shrink-0">
-      <slot name="right-icon"></slot>
-    </div>
+      <!-- Default Slot for Icon Variant -->
+      <slot v-if="variant === 'icon'"></slot>
+
+      <!-- Right Icon Slot -->
+      <div v-if="$slots['right-icon']" class="flex items-center justify-center transition-transform shrink-0">
+        <slot name="right-icon"></slot>
+      </div>
+    </template>
   </button>
 </template>

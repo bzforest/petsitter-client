@@ -53,11 +53,15 @@ onMounted(async () => {
 
 const fetchSitterInfo = async () => {
   try {
-    const { data } = await apiClient.get(`/api/sitter-profiles/${bookingStore.sitterId}`);
+    const { data } = await apiClient.get(
+      `/api/sitter-profiles/${bookingStore.sitterId}`,
+    );
     // 🔥 Balanced fallback: TradeName (if set) else Email (always available)
     sitterName.value = data.tradeName || data.email || "Unknown Sitter";
     sitterPrice.value = data.pricePerHour || 200;
-    sitterPetTypes.value = data.petTypes ? data.petTypes.split(',').map((t: string) => t.trim()) : [];
+    sitterPetTypes.value = data.petTypes
+      ? data.petTypes.split(",").map((t: string) => t.trim())
+      : [];
 
     // ✨ Auto-Cleanup: Remove any selected pets that are not supported by this new sitter
     if (pets.value.length > 0) {
@@ -151,7 +155,9 @@ const submitBooking = async () => {
       const ownerName = stripePaymentRef.value.getCardOwnerName();
 
       if (!stripe || !cardNumber) {
-        throw new Error("Stripe integration failed. Please refresh and try again.");
+        throw new Error(
+          "Stripe integration failed. Please refresh and try again.",
+        );
       }
 
       const { error, paymentIntent } = await stripe.confirmCardPayment(
@@ -164,7 +170,7 @@ const submitBooking = async () => {
               email: bookingStore.email,
             },
           },
-        }
+        },
       );
 
       if (error) {
@@ -174,6 +180,9 @@ const submitBooking = async () => {
       if (paymentIntent.status !== "succeeded") {
         throw new Error("Payment could not be completed at this time.");
       }
+
+      // ✨ NEW: Verify payment with backend since we are on local dev (No Webhook reachable)
+      await apiClient.patch(`/api/bookings/${bookingRes.id}/verify-payment`);
     }
 
     // Success!
@@ -193,8 +202,8 @@ const isPetTypeSupported = (type: string) => {
 };
 
 const validateAndCleanupSelectedPets = () => {
-  bookingStore.selectedPetIds = bookingStore.selectedPetIds.filter(id => {
-    const pet = pets.value.find(p => p.id === id);
+  bookingStore.selectedPetIds = bookingStore.selectedPetIds.filter((id) => {
+    const pet = pets.value.find((p) => p.id === id);
     // If pet exists and is not supported, filter it out
     return pet ? isPetTypeSupported(pet.type) : true;
   });
@@ -205,8 +214,8 @@ const togglePet = (id: number) => {
   const isCurrentlySelected = index > -1;
 
   // Find pet type first to check if supported
-  const pet = pets.value.find(p => p.id === id);
-  
+  const pet = pets.value.find((p) => p.id === id);
+
   // If trying to SELECT a new pet that is NOT supported -> BLOCK
   if (!isCurrentlySelected && pet && !isPetTypeSupported(pet.type)) return;
 
@@ -243,7 +252,7 @@ const getSelectedPetNames = computed(() => {
   <div class="min-h-screen flex flex-col bg-brand-gray-50 font-sans">
     <Navbar />
     <div class="flex flex-row">
-      <main class="flex-1 container mx-auto px-4 py-12 max-w-5xl">
+      <main class="flex-1 container mx-auto lg:px-4 lg:py-12 max-w-5xl">
         <!-- Wizard Header -->
         <div
           class="flex items-center justify-around gap-12 mb-12 bg-white p-6 rounded-2xl overflow-x-auto"
@@ -278,13 +287,13 @@ const getSelectedPetNames = computed(() => {
         </div>
 
         <!-- Step Content Container -->
-        <div class="flex flex-col bg-white rounded-2xl p-10 min-h-125">
+        <div class="flex flex-col bg-white rounded-2xl lg:p-10 min-h-125">
           <!-- STEP 1: YOUR PET -->
           <div
             v-if="currentStep === 1"
             class="flex-1 animate-in fade-in slide-in-from-bottom-4 duration-500"
           >
-            <p class="body-2 mb-10">Choose your pet</p>
+            <p class="body-2 my-10 px-4 lg:mt-0">Choose your pet</p>
 
             <div v-if="isLoadingPets" class="flex justify-center py-20">
               <div
@@ -308,7 +317,7 @@ const getSelectedPetNames = computed(() => {
                 @update:modelValue="togglePet(pet.id)"
                 badgeColor="blue"
               />
-              
+
               <!-- Create New Pet always at the end -->
               <button
                 @click="showPetModal = true"
@@ -323,7 +332,7 @@ const getSelectedPetNames = computed(() => {
           <!-- STEP 2: INFORMATION -->
           <div
             v-if="currentStep === 2"
-            class="flex-1 animate-in fade-in slide-in-from-right-4 duration-500"
+            class="flex-1 animate-in fade-in slide-in-from-right-4 duration-500 px-4"
           >
             <div class="space-y-8 max-w-3xl">
               <InputField
@@ -369,7 +378,7 @@ const getSelectedPetNames = computed(() => {
           <!-- STEP 3: PAYMENT -->
           <div
             v-if="currentStep === 3"
-            class="flex-1 animate-in fade-in slide-in-from-right-4 duration-500"
+            class="flex-1 animate-in fade-in slide-in-from-right-4 duration-500 p-4"
           >
             <div class="flex gap-12">
               <PaymentSelection
@@ -394,7 +403,10 @@ const getSelectedPetNames = computed(() => {
               <div
                 class="mt-8 flex flex-col items-center justify-center text-center bg-brand-gray-50 p-10 rounded-2xl gap-6"
               >
-                <img src="@/assets/Element Design/Vector.png" alt="Pink Cat footprint" />
+                <img
+                  src="@/assets/Element Design/Vector.png"
+                  alt="Pink Cat footprint"
+                />
                 <p class="body-2 text-brand-gray-700">
                   If you want to pay by cash, <br />
                   you are required to make a cash payment <br />
@@ -404,9 +416,56 @@ const getSelectedPetNames = computed(() => {
             </div>
           </div>
 
+          <div class="lg:hidden flex flex-col pt-12">
+            <!-- header -->
+            <div
+              class="bg-white lg:rounded-t-2xl p-6 border-b border-brand-gray-100"
+            >
+              <h3 class="headline-3 text-brand-gray-600">Booking Summary</h3>
+            </div>
+            <!-- summary -->
+            <div class="bg-white rounded-b-2xl p-6 flex flex-col gap-6">
+              <div class="flex flex-col">
+                <p class="body-3 text-brand-gray-500 font-bold mb-1">
+                  Pet Sitter:
+                </p>
+                <p class="body-2 text-brand-gray-700">{{ sitterName }}</p>
+              </div>
+              <div class="flex flex-col">
+                <p class="body-3 text-brand-gray-500 font-bold mb-1">
+                  Date & Time:
+                </p>
+                <p class="body-2 text-brand-gray-700">
+                  {{ formatDate(bookingStore.date) }} |
+                  {{ bookingStore.startTime }} -
+                  {{ bookingStore.endTime }}
+                </p>
+              </div>
+              <div>
+                <p class="body-3 text-brand-gray-500 font-bold mb-1">
+                  Duration:
+                </p>
+                <p class="body-2 text-brand-gray-700">{{ hoursDiff }} hours</p>
+              </div>
+              <div class="flex flex-col">
+                <p class="body-3 text-brand-gray-500 font-bold mb-1">Pet:</p>
+                <div>
+                  <p class="body-2 text-brand-gray-700">
+                    {{ getSelectedPetNames }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <!-- total price -->
+            <div class="bg-black lg:rounded-b-2xl p-6 flex justify-between">
+              <h3 class="headline-3 text-white">Total</h3>
+              <h3 class="headline-3 text-white">{{ totalPrice }} THB</h3>
+            </div>
+          </div>
+
           <!-- Navigation Buttons -->
           <div
-            class="mt-12 flex justify-between items-center pt-8 border-t border-brand-gray-50"
+            class="lg:mt-12 gap-4 flex flex-row justify-around lg:justify-between items-center py-8 lg:py-0 border-t border-brand-gray-50"
           >
             <Button
               @click="prevStep"
@@ -432,7 +491,10 @@ const getSelectedPetNames = computed(() => {
                 variant="primary"
                 class="rounded-full px-12 py-3.5 cursor-pointer"
                 @click="showConfirmModal = true"
-                :disabled="isSubmitting || (paymentMethod === 'card' && !stripePaymentRef?.isComplete)"
+                :disabled="
+                  isSubmitting ||
+                  (paymentMethod === 'card' && !stripePaymentRef?.isComplete)
+                "
               >
                 <div
                   v-if="isSubmitting"
@@ -446,7 +508,7 @@ const getSelectedPetNames = computed(() => {
       </main>
 
       <!-- Right side summary-->
-      <div class="flex flex-col px-4 py-12 w-1/3">
+      <div class="hidden lg:flex flex-col px-4 py-12 w-1/3">
         <!-- header -->
         <div class="bg-white rounded-t-2xl p-6 border-b border-brand-gray-100">
           <h3 class="headline-3 text-brand-gray-600">Booking Summary</h3>
@@ -458,9 +520,12 @@ const getSelectedPetNames = computed(() => {
             <p class="body-2 text-brand-gray-700">{{ sitterName }}</p>
           </div>
           <div class="flex flex-col">
-            <p class="body-3 text-brand-gray-500 font-bold mb-1">Date & Time:</p>
+            <p class="body-3 text-brand-gray-500 font-bold mb-1">
+              Date & Time:
+            </p>
             <p class="body-2 text-brand-gray-700">
-              {{ formatDate(bookingStore.date) }} | {{ bookingStore.startTime }} -
+              {{ formatDate(bookingStore.date) }} |
+              {{ bookingStore.startTime }} -
               {{ bookingStore.endTime }}
             </p>
           </div>
@@ -495,11 +560,19 @@ const getSelectedPetNames = computed(() => {
     />
 
     <!-- Final Confirmation Modal -->
-    <div v-if="showConfirmModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <BookingConfirm 
+    <div
+      v-if="showConfirmModal"
+      class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    >
+      <BookingConfirm
         title="Booking Confirmation"
         message="Are you sure to booking this pet sitter?"
-        @confirm="() => { showConfirmModal = false; submitBooking(); }"
+        @confirm="
+          () => {
+            showConfirmModal = false;
+            submitBooking();
+          }
+        "
         @cancel="showConfirmModal = false"
       />
     </div>

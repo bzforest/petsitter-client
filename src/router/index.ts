@@ -1,9 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import SitterLayout from "@/components/layout/SitterLayout.vue";
 import { useAuthStore, type Role } from "@/stores/auth";
-import AccountLayout from '@/views/account/AccountLayout.vue'
-import ProfileView from '@/views/account/ProfileView.vue'
-import YourPetsView from "@/views/pet/YourPetsView.vue";
 
 // Define the router
 const router = createRouter({
@@ -20,6 +17,8 @@ const router = createRouter({
       path: "/sitterprofile",
       name: "sitterprofile",
       component: SitterLayout,
+      redirect: "/sitterprofile/profile",
+      meta: { requiresAuth: true, roles: ["SITTER", "ADMIN"] },
       children: [
         {
           path: "profile",
@@ -60,7 +59,7 @@ const router = createRouter({
       children: [
         {
           path: '/account/profile',
-          component: ProfileView
+          component: () => import('@/views/account/ProfileView.vue')
         }
       ],
       meta: { requiresAuth: true, roles: ['USER'] },
@@ -84,13 +83,13 @@ const router = createRouter({
       path: "/sitter/:id/booking",
       name: "booking",
       component: () => import("@/views/booking/BookingView.vue"),
-      meta: { requiresAuth: true, roles: ["USER", "SITTER"] },
+      meta: { requiresAuth: true, roles: ["USER", "SITTER", "ADMIN"] },
     },
     {
       path: "/booking-success/:id",
       name: "booking-success",
       component: () => import("@/views/booking/BookingSuccessView.vue"),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, roles: ["USER", "SITTER", "ADMIN"] },
     },
 
     {
@@ -102,6 +101,12 @@ const router = createRouter({
     {
       path: "/history",
       component: () => import("@/views/DesignSystem.vue"),
+    },
+    {
+      path: "/history/owner",
+      name: "booking-history-owner",
+      component: () => import("@/views/booking/BookingHistoryView.vue"),
+      meta: { requiresAuth: true, roles: ["USER", "ADMIN"] },
     },
     {
       path: "/design",
@@ -157,18 +162,23 @@ const router = createRouter({
     },
     {
       path: '/account',
-      component: AccountLayout,
+      component: () => import('@/views/account/AccountLayout.vue'),
       redirect: '/account/profile',
       children: [
         {
           path: 'profile',
           name: 'profile',
-          component: ProfileView
+          component: () => import('@/views/account/ProfileView.vue')
         },
         {
           path: 'yourpet',
           name: 'yourpet',
-          component: YourPetsView
+          component: () => import('@/views/pet/YourPetsView.vue')
+        },
+        {
+          path: 'bookings',
+          name: 'bookings',
+          component: () => import('@/views/booking/BookingHistoryView.vue')
         }
       ]
     },

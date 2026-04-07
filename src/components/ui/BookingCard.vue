@@ -9,7 +9,7 @@ const props = withDefaults(defineProps<{
     sitterName: string;
     ownerName: string;
     transactionDate: string;  // เช่น Tue, 16 Aug 2023
-    status: 'waiting' | 'in_service' | 'success';
+    status: 'waiting' | 'confirmed' | 'in_service' | 'success' | 'cancelled';
     bookingDate: string;  // เช่น 25 Aug, 2023
     bookingTime: string;  // เช่น 7 AM - 10 AM
     duration: string;  // เช่น 3 hours
@@ -17,20 +17,31 @@ const props = withDefaults(defineProps<{
     successDate?: string;  // วันที่ทำรายการสำเร็จ (โชว์เฉพาะสถานะ success)
     sitterAvatarUrl?: string;
     isReviewed?: boolean;
+    canChange?: boolean;
 }>(), {
     sitterAvatarUrl: 'https://ui-avatars.com/api/?name=Sitter&background=F4F5F8&color=1F2937' ,
-    isReviewed: false
+    isReviewed: false,
+    canChange: true
 })
+
+const emit = defineEmits<{
+    (e: 'open-change'): void;
+    (e: 'click'): void;
+}>()
 
 //  Computed Properties สำหรับจัดการสีและข้อความของ Badge ตามสถานะ
 const badgeProps = computed(() => {
     switch (props.status) {
         case 'waiting' :
             return { label: 'Waiting for confirm' , color: 'pink' as const}
+        case 'confirmed' :
+            return { label: 'Confirmed' , color: 'blue' as const}
         case 'in_service' :
             return { label: 'In service' , color: 'blue' as const}
         case 'success' :
             return { label: 'Success' , color: 'green' as const}
+        case 'cancelled' :
+            return { label: 'Cancelled' , color: 'red' as const}
         default :
             return { label: 'Unknown' , color: 'gray' as const}
     }
@@ -38,7 +49,10 @@ const badgeProps = computed(() => {
 </script>
 
 <template>
-    <div class="bg-brand-white p-4 md:p-6 rounded-[16px] border border-brand-gray-100 flex flex-col gap-4 md:gap-6 shadow-sm w-full">
+    <div 
+      @click="emit('click')"
+      class="bg-brand-white p-4 md:p-6 rounded-[16px] border border-brand-gray-100 flex flex-col gap-4 md:gap-6 shadow-sm w-full cursor-pointer hover:border-brand-orange-200 transition-all active:scale-[0.99]"
+    >
       
       <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
         
@@ -66,7 +80,11 @@ const badgeProps = computed(() => {
           <div class="flex items-center gap-2 flex-nowrap">
             <span class="body-2 text-brand-gray-900 font-bold whitespace-nowrap">{{ bookingDate }} | {{ bookingTime }}</span>
             
-            <button v-if="status === 'waiting'" class="flex items-center gap-1 text-brand-orange-700 hover:text-brand-orange-500 transition-colors shrink-0 cursor-pointer">
+            <button 
+              v-if="status === 'waiting' && canChange" 
+              @click.stop="emit('open-change')"
+              class="flex items-center gap-1 text-brand-orange-700 hover:text-brand-orange-500 transition-colors shrink-0 cursor-pointer"
+            >
               <SquarePen class="w-4 h-4" />
               <span class="body-3 font-bold">Change</span>
             </button>
@@ -86,16 +104,16 @@ const badgeProps = computed(() => {
       </div>
   
     <div 
-      v-if="status === 'waiting' || status === 'in_service'" 
+      v-if="status === 'waiting' || status === 'in_service' || status === 'confirmed'" 
       class="bg-brand-gray-50 p-4 rounded-xl flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-2 mt-1 w-full"
     >
       <span class="body-3 text-brand-gray-500 text-left">
-        {{ status === 'waiting' ? 'Waiting Pet Sitter for confirm booking' : 'Your pet is already in Pet Sitter care!' }}
+        {{ status === 'waiting' ? 'Waiting Pet Sitter for confirm booking' : status === 'in_service' ? 'Your pet is already in Pet Sitter care!' : 'Booking confirmed!' }}
       </span>
       
       <div class="flex flex-row items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
-        <Button variant="primary" class="flex-1 md:flex-none cursor-pointer">Send Message</Button>
-        <Button variant="icon" class="shrink-0 cursor-pointer">
+        <Button @click.stop variant="primary" class="flex-1 md:flex-none cursor-pointer">Send Message</Button>
+        <Button @click.stop variant="icon" class="shrink-0 cursor-pointer">
           <Phone class="w-5 h-5" />
         </Button>
       </div>
@@ -112,18 +130,19 @@ const badgeProps = computed(() => {
       
       <div class="flex flex-row items-center justify-end gap-2 w-full md:w-auto mt-2 md:mt-0">
         
-        <button class="body-3 font-bold text-brand-orange-700 hover:text-brand-orange-500 transition-colors px-2 whitespace-nowrap shrink-0 cursor-pointer">
+        <button @click.stop class="body-3 font-bold text-brand-orange-700 hover:text-brand-orange-500 transition-colors px-2 whitespace-nowrap shrink-0 cursor-pointer">
           Report
         </button>
         
         <Button 
+          @click.stop
           :variant="isReviewed ? 'secondary' : 'primary'" 
           class="flex-1 md:flex-none cursor-pointer"
         >
           {{ isReviewed ? 'Your Review' : 'Review' }}
         </Button>
 
-        <Button variant="icon" class="shrink-0">
+        <Button @click.stop variant="icon" class="shrink-0">
           <Phone class="w-5 h-5 cursor-pointer" />
         </Button>
       </div>
