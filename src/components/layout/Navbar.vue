@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted, watch } from "vue";
 import Button from "@/components/ui/Button.vue";
 import IconBell from "@/components/icons/IconBell.vue";
 import Chat from "@/components/icons/Chat.vue";
@@ -12,6 +12,7 @@ import HamburgerMenu from "@/components/icons/HamburgerMenu.vue";
 // 🟢 1. Import Store และ Router เข้ามา
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import apiClient from '@/api/axios'
 
 // 🟢 2. เรียกใช้งาน Store และ Router
 const authStore = useAuthStore()
@@ -50,6 +51,29 @@ function handleLogout() {
   showDropdown.value = false;
   router.push('/login') // เด้งกลับไปหน้า Login
 }
+
+const profileImage = ref("https://ui-avatars.com/api/?name=User&background=ffd5b4&color=ff6b00");
+
+const loadProfileImage = async () => {
+  if (authStore.isLoggedIn) {
+    try {
+      const { data } = await apiClient.get('/api/user-profiles/me')
+      if (data.profile_image) {
+        profileImage.value = data.profile_image
+      }
+    } catch (error) {
+      console.error("Could not load profile image for navbar", error)
+    }
+  }
+}
+
+onMounted(() => {
+  loadProfileImage()
+})
+
+watch(() => authStore.isLoggedIn, (isLoggedIn) => {
+  if (isLoggedIn) loadProfileImage()
+})
 </script>
 
 <template>
@@ -112,7 +136,7 @@ function handleLogout() {
                 class="w-12 h-12 rounded-full overflow-hidden border-2 border-transparent hover:border-brand-orange-500 transition"
               >
                 <img
-                  src="https://i.pravatar.cc/150?img=8"
+                  :src="profileImage"
                   alt="User Profile"
                   class="w-full h-full object-cover"
                 />
@@ -130,7 +154,7 @@ function handleLogout() {
                   class="absolute -right-4 top-14 w-48 bg-white rounded-xl shadow-lg py-2"
                 >
                   <RouterLink
-                    to="/profile"
+                    to="/account/profile"
                     @click="closeDropdown"
                     class="flex items-center gap-3 px-5 py-3 body-2 text-brand-black hover:text-brand-gray-500 transition"
                   >
@@ -139,7 +163,7 @@ function handleLogout() {
                   </RouterLink>
 
                   <RouterLink
-                    to="/your-pet"
+                    to="/account/yourpet"
                     @click="closeDropdown"
                     class="flex items-center gap-3 px-5 py-3 body-2 text-brand-black hover:text-brand-gray-500 transition"
                   >
@@ -148,7 +172,7 @@ function handleLogout() {
                   </RouterLink>
 
                   <RouterLink
-                    to="/history"
+                    to="/account/bookings"
                     @click="closeDropdown"
                     class="flex items-center gap-3 px-5 py-3 body-2 text-brand-black hover:text-brand-gray-500 transition"
                   >
@@ -213,7 +237,7 @@ function handleLogout() {
         <template v-else>
           <div class="flex flex-col gap-5 mb-7">
             <RouterLink
-              to="/profile"
+              to="/account/profile"
               @click="showMobileMenu = false"
               class="flex items-center gap-3 body-2 text-brand-black hover:text-brand-gray-500 transition"
             >
@@ -221,7 +245,7 @@ function handleLogout() {
               Profile
             </RouterLink>
             <RouterLink
-              to="/your-pet"
+              to="/account/yourpet"
               class="flex items-center gap-3 body-2 text-brand-black hover:text-brand-gray-500 transition"
               @click="showMobileMenu = false"
             >
@@ -229,7 +253,7 @@ function handleLogout() {
               Your Pet
             </RouterLink>
             <RouterLink
-              to="/history"
+              to="/account/bookings"
               class="flex items-center gap-3 body-2 text-brand-black hover:text-brand-gray-500 transition"
               @click="showMobileMenu = false"
             >

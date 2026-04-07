@@ -167,7 +167,7 @@ const router = createRouter({
       children: [
         {
           path: 'profile',
-          name: 'profile',
+          name: 'owner-profile',
           component: () => import('@/views/account/ProfileView.vue')
         },
         {
