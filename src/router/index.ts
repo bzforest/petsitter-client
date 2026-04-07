@@ -65,12 +65,6 @@ const router = createRouter({
       ],
       meta: { requiresAuth: true, roles: ['USER'] },
     },
-    {
-      path: "/dashboard/sitter",
-      name: "dashboard-sitter",
-      component: () => import("@/views/dashboard/SitterDashboard.vue"),
-      meta: { requiresAuth: true, roles: ["SITTER"] },
-    },
 
     // Existing routes (keep for nav testing)
     {

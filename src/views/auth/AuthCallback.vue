@@ -43,7 +43,7 @@ onMounted(async () => {
     if (err instanceof Error) {
       errorMessage.value = err.message
     } else {
-      errorMessage.value = 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'
+      errorMessage.value = 'Something went wrong. Please try again.'
     }
   }
 })
@@ -56,7 +56,7 @@ onMounted(async () => {
         <!-- Loading spinner -->
         <div class="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
         <p class="text-gray-600 text-lg font-medium">กำลังเข้าสู่ระบบด้วย Google...</p>
-        <p class="text-gray-400 text-sm mt-2">กรุณารอสักครู่</p>
+        <p class="text-gray-400 text-sm mt-2">Please wait a moment</p>
       </div>
 
       <div v-else class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 max-w-md">

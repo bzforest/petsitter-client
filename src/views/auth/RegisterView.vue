@@ -29,6 +29,45 @@ const buttonLabel = computed(() =>
   selectedRole.value === "USER" ? "Register as Owner" : "Register as Sitter",
 );
 
+// real-time error messages — แสดงทันทีที่พิมพ์และยังไม่เข้าเงื่อนไข
+// หายไปเองเมื่อเข้าเงื่อนไขแล้ว (computed คืน '' เมื่อ valid)
+
+const phoneRealtimeError = computed((): string => {
+  if (!phone.value) return "";
+  if (!/^\d+$/.test(phone.value.trim())) return "Phone number must contain digits only";
+  if (!phone.value.startsWith("0")) return "Phone number must start with 0";
+  if (phone.value.trim().length !== 10) return "Phone number must be exactly 10 digits";
+  return "";
+});
+
+const passwordRealtimeError = computed((): string => {
+  if (!password.value) return "";
+  if (password.value.length < 13)
+    return `Password must be at least 13 characters (currently ${password.value.length})`;
+  return "";
+});
+
+// border สีจาก real-time validation:
+//   ยังไม่ได้พิมพ์ → gray (default)
+//   พิมพ์แล้วแต่ยังผิด rule → red เข้ม
+//   พิมพ์แล้วถูก rule ครบ → orange
+
+const phoneInputClass = computed(() => {
+  const base = "w-full px-4 py-3 border rounded-lg text-sm outline-none transition-colors";
+  if (errors.value.phone || phoneRealtimeError.value)
+    return `${base} border-red-600 focus:border-red-600`;
+  if (!phone.value) return `${base} border-brand-gray-100 focus:border-brand-orange-700`;
+  return `${base} border-orange-500 focus:border-orange-500`;
+});
+
+const passwordInputClass = computed(() => {
+  const base = "w-full px-4 py-3 pr-12 border rounded-lg text-sm outline-none transition-colors";
+  if (errors.value.password || passwordRealtimeError.value)
+    return `${base} border-red-600 focus:border-red-600`;
+  if (!password.value) return `${base} border-brand-gray-100 focus:border-brand-orange-700`;
+  return `${base} border-orange-500 focus:border-orange-500`;
+});
+
 function selectRole(role: "USER" | "SITTER") {
   selectedRole.value = role;
   errors.value = {};
@@ -36,6 +75,36 @@ function selectRole(role: "USER" | "SITTER") {
 
 function clearError(field: keyof typeof errors.value) {
   errors.value[field] = undefined;
+}
+
+function validate(): boolean {
+  errors.value = {};
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^0\d{9}$/;
+
+  if (!email.value.trim()) {
+    errors.value.email = "Email is required";
+  } else if (!emailRegex.test(email.value.trim())) {
+    errors.value.email = "Invalid email format, e.g. example@email.com";
+  }
+
+  if (!phone.value.trim()) {
+    errors.value.phone = "Phone number is required";
+  } else if (!phoneRegex.test(phone.value.trim())) {
+    if (!phone.value.startsWith("0")) {
+      errors.value.phone = "Phone number must start with 0";
+    } else {
+      errors.value.phone = "Phone number must be exactly 10 digits";
+    }
+  }
+
+  if (!password.value) {
+    errors.value.password = "Password is required";
+  } else if (password.value.length < 13) {
+    errors.value.password = `Password must be at least 13 characters (currently ${password.value.length})`;
+  }
+
+  return Object.keys(errors.value).length === 0;
 }
 
 function parseApiErrors(err: unknown) {
@@ -90,14 +159,14 @@ async function onRoleConfirmed(role: 'USER' | 'SITTER') {
     await authStore.loginWithGoogle(role);
     // browser จะ redirect ออกไปหน้า Google
   } catch (err) {
-    errors.value.general = 'ไม่สามารถเชื่อมต่อกับ Google ได้ กรุณาลองใหม่';
+    errors.value.general = 'Unable to connect to Google. Please try again.';
     showRoleModal.value = false;
     isGoogleLoading.value = false;
   }
 }
 
 async function handleSubmit() {
-  errors.value = {};
+  if (!validate()) return;
   isLoading.value = true;
   try {
     await authStore.register({
@@ -116,7 +185,24 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-brand-white flex items-center justify-center px-4">
+  <div class="relative min-h-screen bg-brand-white flex items-center justify-center px-4 overflow-hidden">
+
+    <!-- Yellow paw — top-right corner, partially off-screen -->
+    <img
+      src="@/assets/Element Design/yellowpaw.svg"
+      alt=""
+      aria-hidden="true"
+      class="absolute top-10 -right-3 w-60 pointer-events-none select-none"
+    />
+
+    <!-- Green asterisk — bottom-left corner, partially off-screen -->
+    <img
+      src="@/assets/Element Design/greenasterisk.svg"
+      alt=""
+      aria-hidden="true"
+      class="absolute -bottom-3 left-0 w-60 pointer-events-none select-none"
+    />
+
     <div class="w-full max-w-md bg-brand-white p-8">
       <!-- Header -->
       <div class="text-center mb-8">
@@ -198,15 +284,10 @@ async function handleSubmit() {
             placeholder="Your phone number"
             autocomplete="tel"
             @input="clearError('phone')"
-            :class="[
-              'w-full px-4 py-3 border rounded-lg text-sm outline-none transition-colors',
-              errors.phone
-                ? 'border-brand-red-500 focus:border-brand-red-500'
-                : 'border-brand-gray-100 focus:border-brand-orange-700',
-            ]"
+            :class="phoneInputClass"
           />
-          <p v-if="errors.phone" class="mt-1 text-xs text-brand-red-500">
-            {{ errors.phone }}
+          <p v-if="errors.phone || phoneRealtimeError" class="mt-1 text-xs text-red-600">
+            {{ errors.phone || phoneRealtimeError }}
           </p>
         </div>
 
@@ -222,12 +303,7 @@ async function handleSubmit() {
               placeholder="Create your password"
               autocomplete="new-password"
               @input="clearError('password')"
-              :class="[
-                'w-full px-4 py-3 pr-12 border rounded-lg text-sm outline-none transition-colors',
-                errors.password
-                  ? 'border-brand-red-500 focus:border-brand-red-500'
-                  : 'border-brand-gray-100 focus:border-brand-orange-700',
-              ]"
+              :class="passwordInputClass"
             />
             <button
               type="button"
@@ -274,8 +350,8 @@ async function handleSubmit() {
               </svg>
             </button>
           </div>
-          <p v-if="errors.password" class="mt-1 text-xs text-brand-red-500">
-            {{ errors.password }}
+          <p v-if="errors.password || passwordRealtimeError" class="mt-1 text-xs text-red-600">
+            {{ errors.password || passwordRealtimeError }}
           </p>
           <p class="mt-1 text-xs text-brand-gray-500">Minimum 13 characters</p>
         </div>

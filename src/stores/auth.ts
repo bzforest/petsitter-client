@@ -119,15 +119,7 @@ export const useAuthStore = defineStore('auth', () => {
     return parsed
   }
 
-  /**
-   * เริ่ม Google OAuth flow
-   * เรียก Supabase signInWithOAuth() → redirect ไปหน้า Google
-   * หลัง user เลือก account Google จะ redirect กลับมาที่ /auth/callback
-   *
-   * intendedRole: role ที่ user เลือกจาก GoogleRoleModal
-   *   - เก็บใน localStorage ก่อน redirect เพราะ Vue state จะหายไปหลัง redirect
-   *   - default = 'USER' ถ้า user กด Google จาก Login และยังไม่มีบัญชี
-   */
+// Google OAuth login
   async function loginWithGoogle(intendedRole: Exclude<Role, 'ADMIN'> = 'USER') {
     localStorage.setItem('google_oauth_intended_role', intendedRole)
 
@@ -142,7 +134,6 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.removeItem('google_oauth_intended_role')
       throw new Error(error.message)
     }
-    // browser จะถูก redirect ออกไป — ไม่มีโค้ดทำงานต่อจากนี้
   }
 
   /**
@@ -183,7 +174,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   function getDashboardRoute(): string {
     if (role.value === 'ADMIN') return '/admin/pet-owners'
-    if (role.value === 'SITTER') return '/dashboard/sitter'
+    if (role.value === 'SITTER') return '/sitterprofile'
     if (role.value === 'USER') return '/dashboard/owner'
     return '/login'
   }
