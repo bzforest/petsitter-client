@@ -1,6 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = "https://mvaecmpjwetxavlutdku.supabase.co"
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWVjbXBqd2V0eGF2bHV0ZGt1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDQ5NDk2MSwiZXhwIjoyMDkwMDcwOTYxfQ.WvJuADKQFimtMjcCqYdmhQUXkRib9dhhKt04IKiJwno"
+// ใช้ anon key เท่านั้น — service_role key ห้ามใช้ฝั่ง frontend เด็ดขาด!
+// anon key มีสิทธิ์จำกัดตาม Row Level Security (RLS) policies ใน Supabase
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY in .env')
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)

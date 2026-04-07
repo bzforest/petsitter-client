@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import apiClient from '@/api/axios'
+import { supabase } from '@/lib/supabase'
 
 export type Role = 'ADMIN' | 'SITTER' | 'USER'
 
@@ -118,13 +119,51 @@ export const useAuthStore = defineStore('auth', () => {
     return parsed
   }
 
-  function logout() {
+// Google OAuth login
+  async function loginWithGoogle(intendedRole: Exclude<Role, 'ADMIN'> = 'USER') {
+    localStorage.setItem('google_oauth_intended_role', intendedRole)
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    })
+
+    if (error) {
+      localStorage.removeItem('google_oauth_intended_role')
+      throw new Error(error.message)
+    }
+  }
+
+  /**
+   * Exchange Supabase access_token เป็น JWT ของเรา
+   * เรียกจาก AuthCallback.vue หลัง Google redirect กลับมา
+   * อ่าน intendedRole จาก localStorage แล้วส่งไปให้ backend
+   */
+  async function googleLogin(supabaseAccessToken: string) {
+    const intendedRole = (localStorage.getItem('google_oauth_intended_role') as Exclude<Role, 'ADMIN'> | null) ?? 'USER'
+    localStorage.removeItem('google_oauth_intended_role')
+
+    const { data } = await apiClient.post('/api/auth/google', {
+      accessToken: supabaseAccessToken,
+      intendedRole,
+    })
+    const parsed = parseAuthResponse(data)
+    if (!parsed) throw new Error('Invalid google login response')
+    setAuth(parsed)
+    return parsed
+  }
+
+  async function logout() {
     token.value = null
     email.value = null
     role.value = null
     userId.value = null
     localStorage.removeItem(STORAGE_KEY)
     localStorage.removeItem('token')
+    // Sign out จาก Supabase ด้วย เพื่อล้าง sb-...-auth-token ออกจาก localStorage
+    await supabase.auth.signOut()
   }
 
   // Getters
@@ -135,7 +174,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   function getDashboardRoute(): string {
     if (role.value === 'ADMIN') return '/admin/pet-owners'
-    if (role.value === 'SITTER') return '/dashboard/sitter'
+    if (role.value === 'SITTER') return '/sitterprofile'
     if (role.value === 'USER') return '/dashboard/owner'
     return '/login'
   }
@@ -151,6 +190,8 @@ export const useAuthStore = defineStore('auth', () => {
     isUser,
     register,
     login,
+    loginWithGoogle,
+    googleLogin,
     logout,
     getDashboardRoute,
   }

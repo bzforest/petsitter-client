@@ -24,8 +24,8 @@ const adminInitial = computed(() =>
   (authStore.email?.[0] ?? "A").toUpperCase(),
 );
 
-function handleLogout() {
-  authStore.logout();
+async function handleLogout() {
+  await authStore.logout();
   router.push("/login");
 }
 
