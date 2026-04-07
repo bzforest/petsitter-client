@@ -31,6 +31,18 @@ const form = ref({
   imageUrl: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=300' // Placeholder
 })
 
+const fileInput = ref<HTMLInputElement | null>(null)
+const selectedFile = ref<File | null>(null)
+
+const handleFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement
+    if (target.files && target.files.length > 0) {
+      selectedFile.value = target.files[0]
+      // อัปเดตภาพพรีวิวให้เป็นรูปที่เพิ่งเลือก
+      form.value.imageUrl = URL.createObjectURL(target.files[0]) 
+    }
+}
+
 const typeOptions = [
   { label: 'Dog', value: 'Dog' },
   { label: 'Cat', value: 'Cat' },
@@ -61,15 +73,35 @@ onMounted(() => {
 const handleSave = async () => {
   try {
     isSubmitting.value = true
-    const payload = {
-      ...form.value,
-      userId: authStore.userId
+    
+    // เปลี่ยนจากการสร้าง Object ธรรมดาเป็น FormData
+    const fd = new FormData()
+    fd.append('name', form.value.name)
+    fd.append('type', form.value.type)
+    fd.append('breed', form.value.breed)
+    fd.append('sex', form.value.sex)
+    fd.append('age', String(form.value.age))
+    fd.append('weight', String(form.value.weight))
+    fd.append('aboutPet', form.value.aboutPet)
+    fd.append('userId', String(authStore.userId))
+
+    // ถ้ามีการเลือกไฟล์ใหม่ ให้แนบไฟล์ไปด้วย
+    if (selectedFile.value) {
+      fd.append('image', selectedFile.value)
+    } else {
+      // ถ้าไม่มีการเลือกไฟล์ใหม่ (เช่นตอนกด Edit แล้วไม่ได้เปลี่ยนรูป) ให้ส่ง URL เดิมไป
+      fd.append('imageUrl', form.value.imageUrl)
+    }
+
+    // อย่าลืมใส่ Header!
+    const config = {
+      headers: { 'Content-Type': 'multipart/form-data' }
     }
 
     if (props.pet?.id) {
-      await apiClient.put(`/api/pets/${props.pet.id}`, payload)
+      await apiClient.put(`/api/pets/${props.pet.id}`, fd, config)
     } else {
-      await apiClient.post('/api/pets', payload)
+      await apiClient.post('/api/pets', fd, config)
     }
 
     emit('saved')
@@ -99,7 +131,7 @@ const handleSave = async () => {
       <div class="flex-1 overflow-y-auto p-8 space-y-8">
         <!-- Image Upload Placeholder -->
         <div class="flex flex-col items-center gap-4">
-          <div class="w-32 h-32 rounded-full bg-brand-gray-50 border-2 border-dashed border-brand-gray-200 flex items-center justify-center relative overflow-hidden group">
+          <div @click="fileInput?.click()" class="w-32 h-32 rounded-full bg-brand-gray-50 border-2 border-dashed border-brand-gray-200 flex items-center justify-center relative overflow-hidden group">
             <img v-if="form.imageUrl" :src="form.imageUrl" class="w-full h-full object-cover" />
             <div v-else class="text-brand-gray-300 flex flex-col items-center">
               <Upload class="w-8 h-8" />
@@ -108,6 +140,8 @@ const handleSave = async () => {
             <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
               <Upload class="w-6 h-6 text-white" />
             </div>
+
+            <input type="file" ref="fileInput" accept="image/*" class="hidden" @change="handleFileChange" />
           </div>
           <p class="body-3 text-brand-gray-400">Upload your pet's photo</p>
         </div>
