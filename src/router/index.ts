@@ -1,10 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import SitterLayout from "@/components/layout/SitterLayout.vue";
 import { useAuthStore, type Role } from "@/stores/auth";
-import AccountLayout from '@/views/account/AccountLayout.vue'
-import ProfileView from '@/views/account/ProfileView.vue'
-import YourPetsView from "@/views/pet/YourPetsView.vue";
-import BookingHistoryView from "@/views/booking/BookingHistoryView.vue";
 
 // Define the router
 const router = createRouter({
@@ -63,7 +59,7 @@ const router = createRouter({
       children: [
         {
           path: '/account/profile',
-          component: ProfileView
+          component: () => import('@/views/account/ProfileView.vue')
         }
       ],
       meta: { requiresAuth: true, roles: ['USER'] },
@@ -166,23 +162,23 @@ const router = createRouter({
     },
     {
       path: '/account',
-      component: AccountLayout,
+      component: () => import('@/views/account/AccountLayout.vue'),
       redirect: '/account/profile',
       children: [
         {
           path: 'profile',
           name: 'profile',
-          component: ProfileView
+          component: () => import('@/views/account/ProfileView.vue')
         },
         {
           path: 'yourpet',
           name: 'yourpet',
-          component: YourPetsView
+          component: () => import('@/views/pet/YourPetsView.vue')
         },
         {
           path: 'bookings',
           name: 'bookings',
-          component: BookingHistoryView
+          component: () => import('@/views/booking/BookingHistoryView.vue')
         }
       ]
     },

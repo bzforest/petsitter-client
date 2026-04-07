@@ -183,7 +183,7 @@ const formatTime = (timeStr: string) => {
         <Button
           variant="secondary"
           class="rounded-full px-10 py-4 cursor-pointer"
-          @click="router.push('/history/owner')"
+          @click="router.push('/account/bookings')"
         >
           Booking Detail
         </Button>
