@@ -8,6 +8,7 @@ import Button from "@/components/ui/Button.vue";
 import apiClient from "@/api/axios";
 import { MapPin, MessageSquare, Star } from "lucide-vue-next";
 import BookingDateTimeModal from "@/components/booking/BookingDateTimeModal.vue";
+import ReviewCard from "@/components/ui/ReviewCard.vue";
 
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -20,20 +21,28 @@ const showModal = ref(false);
 
 // This will hold the Sitter Profile data from the API
 const sitter = ref<any>(null);
+const reviewsList = ref<any[]>([]);
 const isLoading = ref(true);
 
 onMounted(async () => {
   try {
     isLoading.value = true;
-    const { data } = await apiClient.get(`/api/sitter-profiles/${sitterId}`);
+    
+    // Fetch Sitter Profile
+    const profileRes = await apiClient.get(`/api/sitter-profiles/${sitterId}`);
+    const data = profileRes.data;
 
-    // Mapping backend response to frontend view model (Matching actual API DTO)
+    // Fetch Reviews (First Page)
+    const reviewsRes = await apiClient.get(`/api/reviews/sitter/${sitterId}?size=10`);
+    reviewsList.value = reviewsRes.data.content;
+
+    // Mapping backend response to frontend view model
     sitter.value = {
       ...data,
       title: data.tradeName || "Pet Sitter Profile",
       owner: data.fullName || data.email || "Pet Sitter",
       rating: data.ratingAvg || 0,
-      reviews: data.reviews || 0, // Fallback if not in DTO yet
+      reviews: reviewsRes.data.totalElements || 0,
       experience: data.experience
         ? `${data.experience} Years Exp.`
         : "New Sitter",
@@ -62,7 +71,7 @@ onMounted(async () => {
       setTimeout(initMap, 0);
     }
   } catch (err) {
-    console.error("Failed to fetch sitter profile:", err);
+    console.error("Failed to fetch sitter info:", err);
   } finally {
     isLoading.value = false;
   }
@@ -270,39 +279,52 @@ const displayGallery = computed(() => {
             </div>
           </div>
 
-          <!-- Rating & Reviews (Static Placeholder for now) -->
-          <section
-            class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex gap-10 items-center"
-          >
-            <div
-              class="bg-black text-white w-24 h-24 rounded-full flex flex-col items-center justify-center font-bold"
-            >
-              <span class="text-3xl">{{ sitter.rating }}</span>
-              <span class="text-xs text-brand-gray-300 font-normal"
-                >{{ sitter.reviews }} reviews</span
+          <!-- Rating & Reviews -->
+          <section class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+            <div class="flex flex-col md:flex-row gap-10 items-start md:items-center mb-8 pb-8 border-b border-brand-gray-50">
+              <div
+                class="bg-black text-white w-24 h-24 rounded-full flex flex-col items-center justify-center font-bold shrink-0"
               >
-            </div>
-            <div class="flex-1">
-              <h3 class="font-bold text-xl mb-4 text-[#111827]">
-                Rating & Reviews
-              </h3>
-              <div class="flex gap-4">
-                <button
-                  class="text-orange-500 border border-orange-200 bg-orange-50 px-4 py-1.5 rounded-full text-sm font-bold"
+                <span class="text-3xl">{{ sitter.rating }}</span>
+                <span class="text-xs text-brand-gray-300 font-normal"
+                  >{{ sitter.reviews }} reviews</span
                 >
-                  All Reviews
-                </button>
-                <button
-                  class="text-gray-500 border border-gray-200 px-4 py-1.5 rounded-full text-sm flex gap-1 items-center"
-                >
-                  5 <Star class="w-3 h-3 fill-green-500 text-green-500" />
-                </button>
-                <button
-                  class="text-gray-500 border border-gray-200 px-4 py-1.5 rounded-full text-sm flex gap-1 items-center"
-                >
-                  4 <Star class="w-3 h-3 fill-green-500 text-green-500" />
-                </button>
               </div>
+              <div class="flex-1">
+                <h3 class="font-bold text-xl mb-4 text-[#111827]">
+                  Rating & Reviews
+                </h3>
+                <div class="flex flex-wrap gap-4">
+                  <button
+                    class="text-orange-500 border border-orange-200 bg-orange-50 px-4 py-1.5 rounded-full text-sm font-bold"
+                  >
+                    All Reviews
+                  </button>
+                  <button
+                    v-for="star in [5, 4, 3, 2, 1]"
+                    :key="star"
+                    class="text-gray-500 border border-gray-200 px-4 py-1.5 rounded-full text-sm flex gap-1 items-center hover:bg-gray-50 transition"
+                  >
+                    {{ star }} <Star class="w-3 h-3 fill-green-500 text-green-500" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Reviews List -->
+            <div v-if="reviewsList.length > 0" class="flex flex-col">
+               <ReviewCard 
+                v-for="review in reviewsList"
+                :key="review.id"
+                :reviewerName="review.userName"
+                :avatarUrl="review.userProfileImage"
+                :rating="review.rating"
+                :comment="review.comment"
+                :date="new Date(review.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })"
+               />
+            </div>
+            <div v-else class="text-center py-10">
+              <p class="body-2 text-brand-gray-300">No reviews yet for this sitter.</p>
             </div>
           </section>
         </div>
