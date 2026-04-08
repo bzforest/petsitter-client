@@ -20,6 +20,7 @@ interface Booking {
   endDate: string;
   startTime: string;
   endTime: string;
+  totalHours?: number;
   totalPrice: number;
   status: string;
   reviewId?: number | null;
@@ -220,7 +221,7 @@ const formatTime = (timeStr: string) => {
           :status="getBookingCardStatus(booking)"
           :bookingDate="formatDate(booking.startDate)"
           :bookingTime="`${formatTime(booking.startTime)} - ${formatTime(booking.endTime)}`"
-          :duration="`${(booking as any).totalHours || 0} hours`"
+          :duration="`${booking.totalHours || 0} hours`"
           :petName="booking.petNames.join(', ')"
           :sitterAvatarUrl="booking.sitterProfileImage || undefined"
           :successDate="booking.status === 'COMPLETED' ? formatDate(booking.endDate) : undefined"

@@ -10,6 +10,8 @@ import { MapPin, MessageSquare, Star } from "lucide-vue-next";
 import BookingDateTimeModal from "@/components/booking/BookingDateTimeModal.vue";
 import ReviewCard from "@/components/ui/ReviewCard.vue";
 
+import PaginationField from "@/components/ui/PaginationField.vue";
+
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import pinSelectedImg from "@/assets/Pin Selection/Property 1=Selected.png";
@@ -19,30 +21,119 @@ const sitterId = route.params.id;
 
 const showModal = ref(false);
 
+// --- Type Definitions ---
+interface Review {
+  id: number;
+  userId: number;
+  userName: string;
+  userProfileImage: string | null;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+interface SitterProfile {
+  id: number;
+  userId: number;
+  tradeName: string;
+  fullName: string;
+  email: string;
+  bio: string;
+  servicesDescription: string;
+  placeDescription: string;
+  profileImage: string | null;
+  pricePerHour: number;
+  ratingAvg: number;
+  experience: number | null;
+  petTypes: string | null;
+  province: string | null;
+  district: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  gallery: string[];
+  // mapped fields (set in onMounted)
+  title: string;
+  owner: string;
+  rating: number;
+  reviews: number;
+  tags: { label: string; color: string }[];
+  location: string;
+  services_description: string;
+  place_description: string;
+}
+
+// Local State for Reviews
+const reviewsList = ref<Review[]>([]);
+const reviewsLoading = ref(false);
+const currentPage = ref(1);
+const totalPages = ref(1);
+const totalReviews = ref(0);
+const selectedRating = ref<number | null>(null);
+const sitterUserId = ref<number | null>(null);
+
 // This will hold the Sitter Profile data from the API
-const sitter = ref<any>(null);
-const reviewsList = ref<any[]>([]);
+const sitter = ref<SitterProfile | null>(null);
 const isLoading = ref(true);
+
+const fetchReviews = async (page = 1, rating: number | null = null, targetUserId: number | null = null) => {
+  // Use targetUserId if provided (initial load), otherwise use stored sitterUserId
+  const uid = targetUserId || sitterUserId.value;
+  if (!uid) return;
+
+  try {
+    reviewsLoading.value = true;
+    const params: any = {
+      page: page - 1,
+      size: 5,
+    };
+    if (rating !== null) params.rating = rating;
+
+    const res = await apiClient.get(`/api/reviews/sitter/${uid}`, { params });
+    reviewsList.value = res.data.content;
+    totalPages.value = res.data.totalPages;
+    totalReviews.value = res.data.totalElements;
+    currentPage.value = page;
+  } catch (err) {
+    console.error("Failed to fetch reviews:", err);
+  } finally {
+    reviewsLoading.value = false;
+  }
+};
+
+const handleFilterReviews = (rating: number | null) => {
+  selectedRating.value = rating;
+  fetchReviews(1, rating);
+};
+
+const handlePageChange = (newPage: number) => {
+  fetchReviews(newPage, selectedRating.value);
+  
+  // Smooth scroll to reviews section
+  const el = document.getElementById("reviews-section");
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth' });
+  }
+};
 
 onMounted(async () => {
   try {
     isLoading.value = true;
     
-    // Fetch Sitter Profile
+    // 1. Fetch Sitter Profile FIRST to get real User ID
     const profileRes = await apiClient.get(`/api/sitter-profiles/${sitterId}`);
     const data = profileRes.data;
+    sitterUserId.value = data.userId;
 
-    // Fetch Reviews (First Page)
-    const reviewsRes = await apiClient.get(`/api/reviews/sitter/${sitterId}?size=10`);
-    reviewsList.value = reviewsRes.data.content;
+    // 2. Fetch Initial Reviews using the real User ID
+    await fetchReviews(1, null, data.userId);
 
-    // Mapping backend response to frontend view model
+    // 3. Mapping backend response to frontend view model
     sitter.value = {
       ...data,
       title: data.tradeName || "Pet Sitter Profile",
       owner: data.fullName || data.email || "Pet Sitter",
       rating: data.ratingAvg || 0,
-      reviews: reviewsRes.data.totalElements || 0,
+      reviews: totalReviews.value, // Use actual count from reviews API
       experience: data.experience
         ? `${data.experience} Years Exp.`
         : "New Sitter",
@@ -66,7 +157,7 @@ onMounted(async () => {
         : "Bangkok",
     };
 
-    if (sitter.value.latitude && sitter.value.longitude) {
+    if (sitter.value?.latitude && sitter.value?.longitude) {
       await nextTick();
       setTimeout(initMap, 0);
     }
@@ -97,8 +188,8 @@ const initMap = () => {
     map = null;
   }
 
-  const lat = sitter.value.latitude;
-  const lng = sitter.value.longitude;
+  const lat = sitter.value.latitude as number;
+  const lng = sitter.value.longitude as number;
 
   map = L.map(el).setView([lat, lng], 15);
 
@@ -234,9 +325,10 @@ const displayGallery = computed(() => {
 
               <div class="flex items-center gap-1 mt-3">
                 <Star
-                  v-for="i in Math.floor(sitter.rating)"
+                  v-for="i in 5"
                   :key="i"
-                  class="w-4 h-4 text-brand-green-500 fill-brand-green-500"
+                  class="w-4 h-4"
+                  :class="i <= sitter.rating ? 'text-brand-green-500 fill-brand-green-500' : 'text-brand-gray-300 fill-brand-gray-300'"
                 />
               </div>
 
@@ -280,51 +372,79 @@ const displayGallery = computed(() => {
           </div>
 
           <!-- Rating & Reviews -->
-          <section class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
-            <div class="flex flex-col md:flex-row gap-10 items-start md:items-center mb-8 pb-8 border-b border-brand-gray-50">
+          <section id="reviews-section" class="bg-brand-gray-50 rounded-3xl p-8 shadow-sm border border-gray-100 mb-10">
+            <div class="flex flex-col bg-white md:flex-row gap-10 items-start md:items-center mb-8 p-4 border-b border-brand-gray-50 rounded-tl-full rounded-bl-full rounded-br-2xl">
               <div
-                class="bg-black text-white w-24 h-24 rounded-full flex flex-col items-center justify-center font-bold shrink-0"
+                class="bg-black text-white w-32 h-32 rounded-tr-full rounded-tl-full rounded-bl-full flex flex-col items-center justify-center font-bold shrink-0 shadow-xl"
               >
-                <span class="text-3xl">{{ sitter.rating }}</span>
+                <span class="text-4xl mb-1">{{ sitter.rating.toFixed(1) }}</span>
                 <span class="text-xs text-brand-gray-300 font-normal"
-                  >{{ sitter.reviews }} reviews</span
+                  >{{ totalReviews }} Reviews</span
                 >
               </div>
               <div class="flex-1">
-                <h3 class="font-bold text-xl mb-4 text-[#111827]">
+                <h3 class="headline-3 mb-6 text-[#111827]">
                   Rating & Reviews
                 </h3>
-                <div class="flex flex-wrap gap-4">
+                <div class="flex flex-wrap gap-3">
                   <button
-                    class="text-orange-500 border border-orange-200 bg-orange-50 px-4 py-1.5 rounded-full text-sm font-bold"
+                    @click="handleFilterReviews(null)"
+                    :class="selectedRating === null 
+                      ? 'text-brand-orange-500 border-brand-orange-200 bg-brand-orange-50' 
+                      : 'text-brand-gray-500 border-brand-gray-200 hover:bg-brand-gray-50'"
+                    class="px-5 py-2 rounded-full text-sm font-bold border transition cursor-pointer"
                   >
                     All Reviews
                   </button>
                   <button
                     v-for="star in [5, 4, 3, 2, 1]"
                     :key="star"
-                    class="text-gray-500 border border-gray-200 px-4 py-1.5 rounded-full text-sm flex gap-1 items-center hover:bg-gray-50 transition"
+                    @click="handleFilterReviews(star)"
+                    :class="selectedRating === star 
+                      ? 'text-brand-green-500 border-brand-green-200 bg-brand-green-50' 
+                      : 'text-brand-gray-500 border-brand-gray-200 hover:bg-brand-gray-50'"
+                    class="px-5 py-2 rounded-full text-sm font-bold border flex gap-1.5 items-center transition cursor-pointer"
                   >
-                    {{ star }} <Star class="w-3 h-3 fill-green-500 text-green-500" />
+                    {{ star }} <Star class="w-3.5 h-3.5 fill-brand-green-500 text-brand-green-500" />
                   </button>
                 </div>
               </div>
             </div>
 
             <!-- Reviews List -->
-            <div v-if="reviewsList.length > 0" class="flex flex-col">
-               <ReviewCard 
-                v-for="review in reviewsList"
-                :key="review.id"
-                :reviewerName="review.userName"
-                :avatarUrl="review.userProfileImage"
-                :rating="review.rating"
-                :comment="review.comment"
-                :date="new Date(review.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })"
-               />
+            <div class="relative min-h-50">
+              <!-- Reviews Loading Overlay -->
+              <div v-if="reviewsLoading" class="absolute inset-0 bg-white/50 z-10 flex justify-center items-center">
+                <div class="w-8 h-8 border-3 border-brand-orange-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+
+              <div v-if="reviewsList.length > 0" class="flex flex-col">
+                 <ReviewCard 
+                  v-for="review in reviewsList"
+                  :key="review.id"
+                  :reviewerName="review.userName"
+                  :avatarUrl="review.userProfileImage ?? undefined"
+                  :rating="review.rating"
+                  :comment="review.comment"
+                  :date="new Date(review.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })"
+                 />
+              </div>
+              <div v-else class="text-center py-16">
+                <div class="w-16 h-16 bg-brand-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Star class="w-8 h-8 text-brand-gray-300" />
+                </div>
+                <p class="headline-4 text-brand-gray-400">No reviews found for this rating.</p>
+                <p class="body-2 text-brand-gray-300 mt-1">Try selecting a different filter or check back later.</p>
+              </div>
             </div>
-            <div v-else class="text-center py-10">
-              <p class="body-2 text-brand-gray-300">No reviews yet for this sitter.</p>
+
+            <!-- Pagination (Requirement: 5 per page) -->
+            <div v-if="totalPages > 1" class="mt-10 flex justify-center border-t border-brand-gray-50 pt-8">
+              <PaginationField 
+                :totalPages="totalPages"
+                :currentPage="currentPage"
+                @update:currentPage="handlePageChange"
+              />
             </div>
           </section>
         </div>
@@ -358,9 +478,10 @@ const displayGallery = computed(() => {
 
             <div class="flex items-center gap-1 mt-3">
               <Star
-                v-for="i in Math.floor(sitter.rating)"
+                v-for="i in 5"
                 :key="i"
-                class="w-4 h-4 text-brand-green-500 fill-brand-green-500"
+                class="w-4 h-4"
+                :class="i <= sitter.rating ? 'text-brand-green-500 fill-brand-green-500' : 'text-brand-gray-300 fill-brand-gray-300'"
               />
             </div>
 
