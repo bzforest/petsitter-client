@@ -13,6 +13,7 @@ interface Booking {
   id: number;
   sitterId: number;
   sitterName: string;
+  sitterProfileImage?: string | null;
   petNames: string[];
   startDate: string;
   endDate: string;
@@ -127,24 +128,8 @@ const handleUpdateBooking = async () => {
 const getBookingCardStatus = (booking: Booking): 'waiting' | 'confirmed' | 'in_service' | 'success' | 'cancelled' => {
   if (booking.status === "CANCELLED") return "cancelled";
   if (booking.status === "COMPLETED") return "success";
-  
-  // Logic for In Service
-  const now = new Date();
-  const start = new Date(`${booking.startDate}T${booking.startTime}+07:00`);
-  
-  // Logic for Auto-Cancellation (if less than 1 hour before start and still not confirmed)
-  const diffHours = (start.getTime() - now.getTime()) / (1000 * 60 * 60);
-  if (diffHours < 1 && (booking.status === "PENDING" || booking.status === "PAID")) {
-    return "cancelled";
-  }
-
-  if (now >= start && booking.status === "CONFIRMED") {
-    return "in_service";
-  }
-
-  if (booking.status === "CONFIRMED") {
-    return "confirmed";
-  }
+  if (booking.status === "IN_SERVICE") return "in_service";
+  if (booking.status === "CONFIRMED") return "confirmed";
   
   return "waiting";
 };
@@ -204,6 +189,7 @@ const formatTime = (timeStr: string) => {
           :bookingTime="`${formatTime(booking.startTime)} - ${formatTime(booking.endTime)}`"
           :duration="`${(booking as any).totalHours || 0} hours`"
           :petName="booking.petNames.join(', ')"
+          :sitterAvatarUrl="booking.sitterProfileImage || undefined"
           :successDate="booking.status === 'COMPLETED' ? formatDate(booking.endDate) : undefined"
           :canChange="checkCanChange(booking)"
           @click="handleOpenDetailModal(booking)"

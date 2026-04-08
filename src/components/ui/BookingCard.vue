@@ -35,7 +35,7 @@ const badgeProps = computed(() => {
         case 'waiting' :
             return { label: 'Waiting for confirm' , color: 'pink' as const}
         case 'confirmed' :
-            return { label: 'Confirmed' , color: 'blue' as const}
+            return { label: 'Waiting for service' , color: 'yellow' as const}
         case 'in_service' :
             return { label: 'In service' , color: 'blue' as const}
         case 'success' :
@@ -108,7 +108,7 @@ const badgeProps = computed(() => {
       class="bg-brand-gray-50 p-4 rounded-xl flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-2 mt-1 w-full"
     >
       <span class="body-3 text-brand-gray-500 text-left">
-        {{ status === 'waiting' ? 'Waiting Pet Sitter for confirm booking' : status === 'in_service' ? 'Your pet is already in Pet Sitter care!' : 'Booking confirmed!' }}
+        {{ status === 'waiting' ? 'Waiting Pet Sitter for confirm booking' : status === 'in_service' ? 'Your pet is already in Pet Sitter care!' : 'Your booking is confirmed and waiting for service.' }}
       </span>
       
       <div class="flex flex-row items-center gap-2 w-full md:w-auto mt-2 md:mt-0">

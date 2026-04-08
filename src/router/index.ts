@@ -22,8 +22,18 @@ const router = createRouter({
       children: [
         {
           path: "profile",
-          name: "profile",
+          name: "sitter-profile",
           component: () => import("../views/Profile.vue"),
+        },
+        {
+          path: "booking",
+          name: "sitter-booking-list",
+          component: () => import("../views/booking/SitterBookingListView.vue"),
+        },
+        {
+          path: "booking/:id",
+          name: "sitter-booking-detail",
+          component: () => import("../views/booking/SitterBookingDetailView.vue"),
         },
       ],
     },
