@@ -12,6 +12,7 @@ interface Booking {
   endDate: string;
   startTime: string;
   endTime: string;
+  totalHours?: number;
   totalPrice: number;
   status: string;
 }
@@ -106,7 +107,7 @@ const formatTime = (timeStr: string) => {
             </p>
           </div>
           <button 
-            v-if="canChange"
+            v-if="(booking.status === 'PENDING' || booking.status === 'PAID') && canChange"
             @click="emit('open-change')"
             class="flex items-center gap-2 text-brand-orange-500 font-bold hover:text-brand-orange-600 transition cursor-pointer"
           >
@@ -118,7 +119,7 @@ const formatTime = (timeStr: string) => {
         <!-- Duration -->
         <div class="space-y-1">
           <p class="body-3 text-brand-gray-500 font-bold uppercase tracking-wider">Duration:</p>
-          <p class="body-2 text-brand-gray-700 font-bold">{{ (booking as any).totalHours || 0 }} hours</p>
+          <p class="body-2 text-brand-gray-700 font-bold">{{ booking.totalHours || 0 }} hours</p>
         </div>
 
         <!-- Pets -->

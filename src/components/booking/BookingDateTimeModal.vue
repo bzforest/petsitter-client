@@ -52,6 +52,7 @@ const minDate = new Date().toLocaleDateString('en-CA') // en-CA gives YYYY-MM-DD
 const date = ref('')
 const startTime = ref('')
 const endTime = ref('')
+const formError = ref('')
 
 // Filter time options to show only future times if today is selected
 const filteredTimeOptions = computed(() => {
@@ -99,17 +100,16 @@ watch(date, () => {
 })
 
 const handleContinue = () => {
-  // Validate inputs
+  formError.value = ''
   if (!date.value || !startTime.value || !endTime.value) {
-    alert("Please select both a date and a time range.")
+    formError.value = 'Please select both a date and a time range.'
     return
   }
 
-  // Double check time order (should be handled by filtering but for safety)
   const [startH, startM] = startTime.value.split(':').map(Number)
   const [endH, endM] = endTime.value.split(':').map(Number)
   if (endH < startH || (endH === startH && endM <= startM)) {
-    alert("End time must be after start time.")
+    formError.value = 'End time must be after start time.'
     return
   }
   
@@ -185,13 +185,16 @@ const handleContinue = () => {
           </div>
         </div>
 
+        <!-- Error Message -->
+        <p v-if="formError" class="body-3 text-red-500 mt-4 text-center">{{ formError }}</p>
+
         <!-- Continue Button -->
         <Button 
           :disabled="!date || !startTime || !endTime || isSubmitting"
           :loading="isSubmitting"
           @click="handleContinue" 
           variant="primary"
-          class="w-full mt-8 rounded-full cursor-pointer"
+          class="w-full mt-4 rounded-full cursor-pointer"
         >
           {{ mode === 'update' ? 'Update' : 'Continue' }}
         </Button>

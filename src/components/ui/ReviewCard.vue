@@ -49,8 +49,8 @@ const props = withDefaults(defineProps<{
                 </template>
             </div>
 
-            <p class="body-2 text-brand-gray-700 leading-relaxed">
-                {{ comment }}
+            <p class="body-2 text-brand-gray-700 leading-relaxed whitespace-pre-wrap">
+                {{ comment || '' }}
             </p>
 
         </div>

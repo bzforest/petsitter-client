@@ -52,7 +52,7 @@ const fetchSitters = async () => {
       title: profile.tradeName || "รับฝากสัตว์เลี้ยง",
       owner: profile.fullName || "ไม่ระบุชื่อ",
       location: profile.province ? `${profile.district || ''}, ${profile.province}` : "ไม่ระบุตำแหน่ง",
-      rating: Math.round(profile.ratingAvg || 0),
+      rating: Math.floor(profile.ratingAvg || 0),
       avatar: profile.profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.id}`,
       tags: (profile.petTypes || "").split(',').filter(Boolean).map((tag: string) => ({
         label: tag.trim(),

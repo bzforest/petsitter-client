@@ -26,6 +26,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
     (e: 'open-change'): void;
+    (e: 'review'): void;
     (e: 'click'): void;
 }>()
 
@@ -135,7 +136,7 @@ const badgeProps = computed(() => {
         </button>
         
         <Button 
-          @click.stop
+          @click.stop="emit('review')"
           :variant="isReviewed ? 'secondary' : 'primary'" 
           class="flex-1 md:flex-none cursor-pointer"
         >
