@@ -30,20 +30,7 @@ const emit = defineEmits<{
 const badgeProps = computed(() => {
   if (props.booking.status === "CANCELLED") return { label: 'Cancelled', color: 'red' as const };
   if (props.booking.status === "COMPLETED") return { label: 'Success', color: 'green' as const };
-  
-  const now = new Date();
-  const start = new Date(`${props.booking.startDate}T${props.booking.startTime}+07:00`);
-  
-  // Logic for Auto-Cancellation (if less than 1 hour before start and still not confirmed)
-  const diffHours = (start.getTime() - now.getTime()) / (1000 * 60 * 60);
-  if (diffHours < 1 && (props.booking.status === "PENDING" || props.booking.status === "PAID")) {
-    return { label: 'Cancelled', color: 'red' as const };
-  }
-
-  // Logic for In Service
-  if (now >= start && props.booking.status === "CONFIRMED") {
-    return { label: 'In Service', color: 'blue' as const };
-  }
+  if (props.booking.status === "IN_SERVICE") return { label: 'In Service', color: 'blue' as const };
 
   // Standard statuses
   switch (props.booking.status) {
@@ -52,7 +39,7 @@ const badgeProps = computed(() => {
     case "PAID":
       return { label: 'Waiting for confirm', color: 'pink' as const }
     case "CONFIRMED":
-      return { label: 'Confirmed', color: 'blue' as const }
+      return { label: 'Waiting for service', color: 'yellow' as const }
     default:
       return { label: props.booking.status, color: 'gray' as const }
   }

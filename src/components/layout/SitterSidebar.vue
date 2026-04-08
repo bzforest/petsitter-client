@@ -71,7 +71,7 @@ const auth = useAuthStore();
 
 const navItems: { to: string; label: string; icon: Component; showDot?: boolean }[] = [
   { to: "/sitterprofile/profile", label: "Pet Sitter Profile", icon: User },
-  { to: "/booking", label: "Booking List", icon: List, showDot: true },
+  { to: "/sitterprofile/booking", label: "Booking List", icon: List, showDot: true },
   { to: "/calendar", label: "Calendar", icon: Calendar },
   { to: "/payout", label: "Payout Option", icon: CreditCard },
 ];
