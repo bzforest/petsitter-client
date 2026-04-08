@@ -6,6 +6,7 @@ import BookingCard from "@/components/ui/BookingCard.vue";
 import PaginationField from "@/components/ui/PaginationField.vue";
 import BookingDateTimeModal from "@/components/booking/BookingDateTimeModal.vue";
 import BookingDetailModal from "@/components/booking/BookingDetailModal.vue";
+import ReviewModal from "@/components/booking/ReviewModal.vue";
 import { PawPrint } from "lucide-vue-next";
 import Button from "@/components/ui/Button.vue";
 
@@ -21,6 +22,7 @@ interface Booking {
   endTime: string;
   totalPrice: number;
   status: string;
+  reviewId?: number | null;
 }
 
 const authStore = useAuthStore();
@@ -36,9 +38,18 @@ const totalElements = ref(0);
 // Modal State
 const isDateTimeModalOpen = ref(false);
 const isDetailModalOpen = ref(false);
+const isReviewModalOpen = ref(false);
 const isSubmittingUpdate = ref(false);
 const editingBooking = ref<Booking | null>(null);
 const selectedDetailBooking = ref<Booking | null>(null);
+
+// Review State
+const reviewMode = ref<'create' | 'edit'>('create');
+const currentReviewData = ref<{ rating: number; comment: string; id: number | null }>({
+  rating: 0,
+  comment: '',
+  id: null
+});
 
 onMounted(async () => {
   fetchBookings();
@@ -95,6 +106,28 @@ const handleOpenChangeModal = (booking: Booking) => {
 const handleOpenDetailModal = (booking: Booking) => {
   selectedDetailBooking.value = booking;
   isDetailModalOpen.value = true;
+};
+
+const handleOpenReviewModal = async (booking: Booking) => {
+  editingBooking.value = booking;
+  if (booking.reviewId) {
+    reviewMode.value = 'edit';
+    try {
+      const { data } = await apiClient.get(`/api/reviews/booking/${booking.id}`);
+      currentReviewData.value = {
+        rating: data.rating,
+        comment: data.comment,
+        id: data.id
+      };
+    } catch (err) {
+      console.error("Failed to fetch review data", err);
+      return;
+    }
+  } else {
+    reviewMode.value = 'create';
+    currentReviewData.value = { rating: 0, comment: '', id: null };
+  }
+  isReviewModalOpen.value = true;
 };
 
 const handleUpdateBooking = async () => {
@@ -192,8 +225,10 @@ const formatTime = (timeStr: string) => {
           :sitterAvatarUrl="booking.sitterProfileImage || undefined"
           :successDate="booking.status === 'COMPLETED' ? formatDate(booking.endDate) : undefined"
           :canChange="checkCanChange(booking)"
+          :isReviewed="!!booking.reviewId"
           @click="handleOpenDetailModal(booking)"
           @open-change="handleOpenChangeModal(booking)"
+          @review="handleOpenReviewModal(booking)"
         />
 
         <!-- Pagination -->
@@ -223,6 +258,19 @@ const formatTime = (timeStr: string) => {
       mode="update"
       @close="isDateTimeModalOpen = false"
       @confirm="handleUpdateBooking"
+    />
+
+    <!-- Modal for Review -->
+    <ReviewModal
+      v-if="isReviewModalOpen && editingBooking"
+      :bookingId="editingBooking.id"
+      :sitterId="editingBooking.sitterId"
+      :mode="reviewMode"
+      :reviewId="currentReviewData.id"
+      :initialRating="currentReviewData.rating"
+      :initialComment="currentReviewData.comment"
+      @close="isReviewModalOpen = false"
+      @success="fetchBookings"
     />
 
   </div>
