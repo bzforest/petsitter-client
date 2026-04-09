@@ -36,6 +36,18 @@ const paymentMethod = ref("card");
 const stripePaymentRef = ref<any>(null);
 const showConfirmModal = ref(false);
 
+function getBookingErrorMessage(error: unknown): string {
+  const maybe = error as { response?: { data?: { message?: string } } };
+  const raw = maybe?.response?.data?.message || "";
+  if (
+    raw.includes("Sitter already has another booking in this time range") ||
+    raw.toLowerCase().includes("overlap")
+  ) {
+    return "ช่วงเวลานี้พี่เลี้ยงไม่ว่างแล้ว กรุณาเลือกเวลาใหม่ (This sitter is unavailable in the selected time range. Please choose another time slot.)";
+  }
+  return raw || "Booking failed. Please try again.";
+}
+
 onMounted(async () => {
   if (!bookingStore.date || !bookingStore.sitterId) {
     router.replace("/");
@@ -190,7 +202,7 @@ const submitBooking = async () => {
     router.push(`/booking-success/${bookingRes.id}`);
   } catch (err: any) {
     console.error(err);
-    alert(err.response?.data?.message || "Booking failed. Please try again.");
+    alert(getBookingErrorMessage(err));
   } finally {
     isSubmitting.value = false;
   }

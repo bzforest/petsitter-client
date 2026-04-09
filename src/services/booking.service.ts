@@ -25,11 +25,19 @@ export interface BookingResponse {
 }
 interface ApiPage<T> {
   content: T[];
+  number: number;
+  totalPages: number;
+  totalElements: number;
 }
 
-export const getSitterBookings = async () => {
-  const { data } = await apiClient.get<ApiPage<BookingResponse>>("/api/bookings/sitter/me?page=0&size=100");
-  return data.content ?? [];
+export const getSitterBookings = async (page = 0, size = 10) => {
+  const { data } = await apiClient.get<ApiPage<BookingResponse>>(`/api/bookings/sitter/me?page=${page}&size=${size}`);
+  return {
+    content: data.content ?? [],
+    number: data.number ?? page,
+    totalPages: data.totalPages ?? 1,
+    totalElements: data.totalElements ?? (data.content?.length ?? 0),
+  };
 };
 
 export const getBookingsBySitterId = async (sitterUserId: number) => {

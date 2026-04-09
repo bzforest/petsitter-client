@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { getSitterBookings, type BookingResponse, type BookingStatusApi } from "@/services/booking.service";
+import { getOwnerProfileByUserId } from "@/services/userProfile.service";
 import { useToast } from "@/composables/useToast";
 
 const router = useRouter();
@@ -9,6 +10,11 @@ const { showToast } = useToast();
 
 const loading = ref(false);
 const bookings = ref<BookingResponse[]>([]);
+const ownerNameByUserId = ref<Record<number, string>>({});
+const pageSize = 10;
+const currentPage = ref(0);
+const totalPages = ref(1);
+const totalElements = ref(0);
 
 function labelFromStatus(status: BookingStatusApi) {
   if (status === "CONFIRMED") return "Waiting for service";
@@ -29,13 +35,19 @@ function classFromStatus(status: BookingStatusApi) {
 const rows = computed(() =>
   [...bookings.value]
     .sort((a, b) => {
-      const aMs = new Date(`${a.startDate}T${a.startTime}`).getTime();
-      const bMs = new Date(`${b.startDate}T${b.startTime}`).getTime();
-      if (aMs !== bMs) return aMs - bMs;
-      return a.id - b.id;
+      const aCreated = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bCreated = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      if (aCreated !== bCreated) return bCreated - aCreated;
+
+      const aStart = new Date(`${a.startDate}T${a.startTime}`).getTime();
+      const bStart = new Date(`${b.startDate}T${b.startTime}`).getTime();
+      if (aStart !== bStart) return bStart - aStart;
+
+      return b.id - a.id;
     })
     .map((b) => ({
       ...b,
+      ownerName: ownerNameByUserId.value[b.userId] || `User #${b.userId}`,
       schedule: `${b.startDate} ${b.startTime} - ${b.endTime}`,
       petsCount: b.petIds.length,
       transactionNo: b.id,
@@ -47,10 +59,37 @@ const rows = computed(() =>
     }))
 );
 
-async function loadBookings() {
+async function loadOwnerNames(items: BookingResponse[]) {
+  const uniqueUserIds = Array.from(new Set(items.map((item) => item.userId)));
+  if (uniqueUserIds.length === 0) return;
+
+  await Promise.all(
+    uniqueUserIds.map(async (userId) => {
+      // Keep cached names to avoid duplicate requests between page switches.
+      if (ownerNameByUserId.value[userId]) return;
+      try {
+        const { data } = await getOwnerProfileByUserId(userId);
+        const name = data.fullName?.trim() || data.email?.trim() || `User #${userId}`;
+        ownerNameByUserId.value[userId] = name;
+      } catch {
+        ownerNameByUserId.value[userId] = `User #${userId}`;
+      }
+    })
+  );
+}
+
+const pageStart = computed(() => (totalElements.value === 0 ? 0 : currentPage.value * pageSize + 1));
+const pageEnd = computed(() => Math.min((currentPage.value + 1) * pageSize, totalElements.value));
+
+async function loadBookings(page = currentPage.value) {
   try {
     loading.value = true;
-    bookings.value = await getSitterBookings();
+    const res = await getSitterBookings(page, pageSize);
+    bookings.value = res.content;
+    currentPage.value = res.number;
+    totalPages.value = Math.max(1, res.totalPages);
+    totalElements.value = res.totalElements;
+    await loadOwnerNames(res.content);
   } catch {
     showToast("Failed to load booking list", "error");
   } finally {
@@ -60,6 +99,11 @@ async function loadBookings() {
 
 function openDetail(id: number) {
   router.push({ name: "sitter-booking-detail", params: { id } });
+}
+
+function goToPage(page: number) {
+  if (page < 0 || page >= totalPages.value || page === currentPage.value || loading.value) return;
+  void loadBookings(page);
 }
 
 onMounted(() => {
@@ -98,7 +142,7 @@ onMounted(() => {
             :key="row.id"
             class="border-t border-brand-gray-100 body-3 text-brand-gray-700"
           >
-            <td class="px-4 py-3">{{ `User #${row.userId}` }}</td>
+            <td class="px-4 py-3">{{ row.ownerName }}</td>
             <td class="px-4 py-3">{{ row.petsCount }}</td>
             <td class="px-4 py-3">{{ row.schedule }}</td>
             <td class="px-4 py-3">{{ row.transactionDate }}</td>
@@ -118,6 +162,37 @@ onMounted(() => {
           </tr>
         </tbody>
       </table>
+
+      <footer
+        v-if="!loading && totalElements > 0"
+        class="flex items-center justify-between border-t border-brand-gray-100 px-4 py-3"
+      >
+        <p class="body-3 text-brand-gray-500">
+          Showing {{ pageStart }}-{{ pageEnd }} of {{ totalElements }}
+        </p>
+
+        <section class="flex items-center gap-2">
+          <button
+            type="button"
+            class="cursor-pointer rounded-md border border-brand-gray-100 px-3 py-1 body-3 text-brand-gray-700 transition hover:bg-brand-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            :disabled="currentPage === 0"
+            @click="goToPage(currentPage - 1)"
+          >
+            Prev
+          </button>
+          <p class="body-3 text-brand-gray-700">
+            Page {{ currentPage + 1 }} / {{ totalPages }}
+          </p>
+          <button
+            type="button"
+            class="cursor-pointer rounded-md border border-brand-gray-100 px-3 py-1 body-3 text-brand-gray-700 transition hover:bg-brand-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            :disabled="currentPage >= totalPages - 1"
+            @click="goToPage(currentPage + 1)"
+          >
+            Next
+          </button>
+        </section>
+      </footer>
     </article>
   </section>
 </template>
