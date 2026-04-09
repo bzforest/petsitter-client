@@ -3,6 +3,9 @@ import { computed } from 'vue'
 import { Phone, SquarePen } from 'lucide-vue-next'
 import Badge from './Badge.vue'
 import Button from './Button.vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 //  กำหนด Props ให้คลุมทุกข้อมูลในการ์ด
 const props = withDefaults(defineProps<{
@@ -18,6 +21,7 @@ const props = withDefaults(defineProps<{
     sitterAvatarUrl?: string;
     isReviewed?: boolean;
     canChange?: boolean;
+    partnerId?: number;
 }>(), {
     sitterAvatarUrl: 'https://ui-avatars.com/api/?name=Sitter&background=F4F5F8&color=1F2937' ,
     isReviewed: false,
@@ -47,6 +51,14 @@ const badgeProps = computed(() => {
             return { label: 'Unknown' , color: 'gray' as const}
     }
 })
+
+const handleMessage = () => {
+  if (props.partnerId) {
+    router.push({ path: '/chat', query: { newChat: props.partnerId } })
+  } else {
+    alert("ไม่พบ ID สำหรับแชทครับ")
+  }
+}
 </script>
 
 <template>
@@ -113,7 +125,7 @@ const badgeProps = computed(() => {
       </span>
       
       <div class="flex flex-row items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
-        <Button @click.stop variant="primary" class="flex-1 md:flex-none cursor-pointer">Send Message</Button>
+        <Button @click.stop="handleMessage" variant="primary" class="flex-1 md:flex-none cursor-pointer">Send Message</Button>
         <Button @click.stop variant="icon" class="shrink-0 cursor-pointer">
           <Phone class="w-5 h-5" />
         </Button>

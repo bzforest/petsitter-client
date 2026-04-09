@@ -67,7 +67,6 @@ const fetchBookings = async () => {
     // Spring Data JPA is 0-indexed, UI is 1-indexed
     const pageIndex = currentPage.value - 1;
     const { data } = await apiClient.get(`/api/bookings/user/me?page=${pageIndex}&size=${itemsPerPage}`);
-    
     // Page response has 'content', 'totalPages', 'totalElements'
     bookings.value = data.content;
     totalPages.value = data.totalPages;
@@ -215,6 +214,7 @@ const formatTime = (timeStr: string) => {
         <BookingCard
           v-for="booking in bookings"
           :key="booking.id"
+          :partnerId="booking.sitterId"
           :sitterName="booking.sitterName"
           :ownerName="authStore.email || 'Pet Owner'"
           :transactionDate="formatDate(booking.startDate)"

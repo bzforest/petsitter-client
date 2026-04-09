@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { MessagesSquare, UserRound } from "lucide-vue-next";
 import { useAuthStore } from "@/stores/auth";
 import { getProfile } from "@/services/sitter.service";
@@ -9,6 +9,7 @@ const SITTER_PROFILE_UPDATED = "petsitter-sitter-profile-updated";
 
 const route = useRoute();
 const auth = useAuthStore();
+const router = useRouter()
 
 // Sitter Navbar state
 const sitterFullName = ref("");
@@ -54,7 +55,7 @@ watch(
 );
 
 function onChatPlaceholderClick() {
-  /* Chat feature - coming soon */
+  router.push('/chat');
 }
 </script>
 
@@ -94,7 +95,7 @@ function onChatPlaceholderClick() {
       type="button"
       class="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-brand-gray-50 text-brand-gray-600 transition hover:bg-brand-gray-100 hover:text-brand-gray-900"
       aria-label="Chat"
-      title="Chat — coming soon"
+      title="Chat"
       @click="onChatPlaceholderClick"
     >
       <MessagesSquare class="h-5 w-5" stroke-width="2" aria-hidden="true" />

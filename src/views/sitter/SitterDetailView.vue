@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, nextTick } from "vue";
 import { useRoute } from "vue-router";
+import { useRouter } from 'vue-router'
 import Navbar from "@/components/layout/Navbar.vue";
 import Footer from "@/components/layout/Footer.vue";
 import Badge from "@/components/ui/Badge.vue";
@@ -17,6 +18,7 @@ import "leaflet/dist/leaflet.css";
 import pinSelectedImg from "@/assets/Pin Selection/Property 1=Selected.png";
 
 const route = useRoute();
+const router = useRouter()
 const sitterId = route.params.id;
 
 const showModal = ref(false);
@@ -205,7 +207,15 @@ const handleBookNow = () => {
 };
 
 const handleMessage = () => {
-  alert("Message functionality is coming soon");
+  //  ดึง ID ของ Sitter คนนี้ออกมา 
+  const targetUserId = sitter.value.userId || sitter.value.id; 
+  
+  if (targetUserId) {
+    // สั่งเปลี่ยนหน้าต่างไปที่ /chat พร้อมแนบ Query ?newChat=เลขไอดี
+    router.push({ path: '/chat', query: { newChat: targetUserId } });
+  } else {
+    alert("ไม่พบ ID ของ Sitter คนนี้ครับ");
+  }
 };
 
 // --- Gallery Fallback Logic ---
