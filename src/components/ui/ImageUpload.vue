@@ -64,7 +64,7 @@ function removeImage() {
                   flex items-center justify-center">
                 <img v-if="previewUrl" :src="previewUrl" class="w-full h-full object-cover" />
                 <!-- placeholder icon -->
-                <UserRound class="w-20 h-20 text-brand-white" />
+                <UserRound v-else class="w-20 h-20 text-brand-white" />
             </div>
 
             <!-- ปุ่ม + วงกลมด้านล่างขวา -->

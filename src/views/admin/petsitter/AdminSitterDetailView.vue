@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ChevronLeft, AlertCircle, User } from "lucide-vue-next";
 import {
@@ -8,9 +8,16 @@ import {
   rejectSitter,
   type SitterProfile,
 } from "@/api/admin/sitterProfiles";
+import {
+  getBookingsBySitterId,
+  type BookingResponse,
+  type BookingStatusApi,
+} from "@/services/booking.service";
 import SitterStatusBadge from "@/components/admin/SitterStatusBadge.vue";
+import AdminBookingDetailModal from "@/components/admin/AdminBookingDetailModal.vue";
 import RejectConfirmPopup from "@/components/ui/RejectConfirmPopup.vue";
 import Button from "@/components/ui/Button.vue";
+import ReadOnlyMap from "@/components/ map/ReadOnlyMap.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -22,6 +29,60 @@ const errorMessage = ref<string | null>(null);
 const isSubmitting = ref(false);
 const showRejectModal = ref(false);
 const activeTab = ref<"profile" | "booking" | "reviews">("profile");
+
+const bookings = ref<BookingResponse[]>([]);
+const bookingsLoading = ref(false);
+const selectedBookingId = ref<number | null>(null);
+
+function labelFromStatus(status: BookingStatusApi) {
+  if (status === "CONFIRMED") return "Waiting for service";
+  if (status === "IN_SERVICE") return "In service";
+  if (status === "COMPLETED") return "Success";
+  if (status === "CANCELLED") return "Cancelled";
+  return "Waiting for confirm";
+}
+
+function classFromStatus(status: BookingStatusApi) {
+  if (status === "CONFIRMED") return "text-brand-orange-700";
+  if (status === "IN_SERVICE") return "text-brand-blue-500";
+  if (status === "COMPLETED") return "text-brand-green-500";
+  if (status === "CANCELLED") return "text-brand-red-500";
+  return "text-brand-pink-500";
+}
+
+function formatBookedDate(b: BookingResponse): string {
+  const fmt = (t: string) => {
+    const [h] = t.split(":");
+    const hour = parseInt(h, 10);
+    const suffix = hour >= 12 ? "PM" : "AM";
+    const display = hour % 12 === 0 ? 12 : hour % 12;
+    return `${display} ${suffix}`;
+  };
+  const start = new Date(b.startDate);
+  const end = new Date(b.endDate);
+  const startLabel = start.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  const endLabel = end.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  if (startLabel === endLabel) return `${startLabel}, ${fmt(b.startTime)} - ${fmt(b.endTime)}`;
+  return `${startLabel}, ${fmt(b.startTime)} - ${endLabel}, ${fmt(b.endTime)}`;
+}
+
+async function loadBookings() {
+  if (!profile.value) return;
+  bookingsLoading.value = true;
+  try {
+    bookings.value = await getBookingsBySitterId(profile.value.userId);
+  } catch {
+    errorMessage.value = "Failed to load bookings.";
+  } finally {
+    bookingsLoading.value = false;
+  }
+}
+
+watch(activeTab, (tab) => {
+  if (tab === "booking" && bookings.value.length === 0 && !bookingsLoading.value) {
+    void loadBookings();
+  }
+});
 
 const PENDING_TEXT = "รอ Pet sitter ดำเนินการอัพเดท";
 
@@ -67,16 +128,6 @@ async function handleReject(reason: string) {
 }
 
 // Helpers function
-function formatDate(dateStr: string | null): string | null {
-  if (!dateStr) return null;
-  const d = new Date(dateStr);
-  return d.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
-
 function parsePetTypes(petTypes: string | null): string[] {
   if (!petTypes) return [];
   return petTypes
@@ -91,16 +142,13 @@ const displayName = computed(
 
 // Derived display values (null = no data → show pending text)
 const fullName = computed(() => profile.value?.fullName?.trim() || null);
+const isApproved = computed(() => profile.value?.status === "APPROVED");
 const experience = computed(() =>
   profile.value?.experience != null
     ? `${profile.value.experience} Year${profile.value.experience !== 1 ? "s" : ""}`
     : null,
 );
 const phone = computed(() => profile.value?.phone?.trim() || null);
-const idNumber = computed(() => profile.value?.idNumber?.trim() || null);
-const dateOfBirth = computed(() =>
-  formatDate(profile.value?.dateOfBirth ?? null),
-);
 const bio = computed(() => profile.value?.bio?.trim() || null);
 
 // APPROVED section
@@ -108,7 +156,9 @@ const tradeName = computed(() => profile.value?.tradeName?.trim() || null);
 const petTypesList = computed(() =>
   parsePetTypes(profile.value?.petTypes ?? null),
 );
-const services = computed(() => profile.value?.services?.trim() || null);
+const services = computed(
+  () => profile.value?.servicesDescription?.trim() || null,
+);
 const placeDescription = computed(
   () => profile.value?.placeDescription?.trim() || null,
 );
@@ -123,6 +173,9 @@ const address = computed(() => {
   ].filter(Boolean) as string[];
   return parts.length > 0 ? parts.join(", ") : null;
 });
+const hasCoords = computed(
+  () => profile.value?.latitude != null && profile.value?.longitude != null,
+);
 const gallery = computed(() =>
   profile.value?.gallery && profile.value.gallery.length > 0
     ? profile.value.gallery
@@ -232,8 +285,7 @@ const gallery = computed(() =>
         <span>
           Their request has not been approved
           <span v-if="profile.rejectReason"
-            >: '<em>{{ profile.rejectReason }}</em
-            >'</span
+            >: '<em>{{ profile.rejectReason }}</em> '</span
           >
         </span>
       </div>
@@ -298,8 +350,8 @@ const gallery = computed(() =>
                   </p>
                 </div>
 
-                <!-- Experience -->
-                <div class="flex flex-col gap-1">
+                <!-- Experience — แสดงเฉพาะเมื่อ APPROVED -->
+                <div v-if="isApproved" class="flex flex-col gap-1">
                   <p class="headline-4 font-bold text-brand-gray-300">
                     Experience
                   </p>
@@ -316,32 +368,6 @@ const gallery = computed(() =>
                   <p class="headline-4 font-bold text-brand-gray-300">Phone</p>
                   <p v-if="phone" class="body-2 text-brand-black">
                     {{ phone }}
-                  </p>
-                  <p v-else class="body-2 text-red-500 font-medium">
-                    {{ PENDING_TEXT }}
-                  </p>
-                </div>
-
-                <!-- ID Number -->
-                <div class="flex flex-col gap-1">
-                  <p class="headline-4 font-bold text-brand-gray-300">
-                    ID Number
-                  </p>
-                  <p v-if="idNumber" class="body-2 text-brand-black">
-                    {{ idNumber }}
-                  </p>
-                  <p v-else class="body-2 text-red-500 font-medium">
-                    {{ PENDING_TEXT }}
-                  </p>
-                </div>
-
-                <!-- Date of Birth -->
-                <div class="flex flex-col gap-1">
-                  <p class="headline-4 font-bold text-brand-gray-300">
-                    Date of Birth
-                  </p>
-                  <p v-if="dateOfBirth" class="body-2 text-brand-black">
-                    {{ dateOfBirth }}
                   </p>
                   <p v-else class="body-2 text-red-500 font-medium">
                     {{ PENDING_TEXT }}
@@ -467,16 +493,61 @@ const gallery = computed(() =>
                   {{ PENDING_TEXT }}
                 </p>
               </div>
+
+              <!-- Map — แสดงเมื่อมี lat/lng -->
+              <ReadOnlyMap
+                v-if="hasCoords"
+                :lat="profile.latitude!"
+                :lng="profile.longitude!"
+              />
+              <p v-else class="body-3 text-brand-gray-400 italic">
+                No location pin set yet.
+              </p>
             </div>
           </template>
         </div>
 
-        <!-- Booking Tab (placeholder) -->
-        <div
-          v-else-if="activeTab === 'booking'"
-          class="flex-1 flex items-center justify-center py-24 text-brand-gray-400 body-3"
-        >
-          Booking data coming soon.
+        <!-- Booking Tab -->
+        <div v-else-if="activeTab === 'booking'" class="py-6 px-0">
+          <div v-if="bookingsLoading" class="flex items-center justify-center py-20 text-brand-gray-400 body-3">
+            Loading bookings...
+          </div>
+          <div v-else-if="bookings.length === 0" class="flex items-center justify-center py-20 text-brand-gray-400 body-3">
+            No bookings found.
+          </div>
+          <table v-else class="w-full border-collapse">
+            <thead class="bg-brand-black text-brand-white">
+              <tr class="body-3">
+                <th class="px-5 py-3.5 text-left">Pet Owner Name</th>
+                <th class="px-5 py-3.5 text-left">Pet(s)</th>
+                <th class="px-5 py-3.5 text-left">Duration</th>
+                <th class="px-5 py-3.5 text-left">Booked Date</th>
+                <th class="px-5 py-3.5 text-left">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="row in bookings"
+                :key="row.id"
+                class="border-t border-brand-gray-100 body-3 text-brand-gray-700 cursor-pointer hover:bg-brand-gray-50 transition-colors"
+                @click="selectedBookingId = row.id"
+              >
+                <td class="px-5 py-3">
+                  <span
+                    v-if="row.status === 'PENDING' || row.status === 'PAID'"
+                    class="mr-2 inline-block h-2 w-2 rounded-full bg-brand-pink-500"
+                  />
+                  {{ row.ownerName || `User #${row.userId}` }}
+                </td>
+                <td class="px-5 py-3">{{ row.petIds.length }}</td>
+                <td class="px-5 py-3">{{ row.totalHours }} hours</td>
+                <td class="px-5 py-3">{{ formatBookedDate(row) }}</td>
+                <td class="px-5 py-3">
+                  <span :class="classFromStatus(row.status)">• {{ labelFromStatus(row.status) }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <!-- Reviews Tab (placeholder) -->
@@ -504,6 +575,15 @@ const gallery = computed(() =>
           />
         </div>
       </Transition>
+    </Teleport>
+
+    <!-- Booking Detail Modal -->
+    <Teleport to="body">
+      <AdminBookingDetailModal
+        v-if="selectedBookingId !== null"
+        :booking-id="selectedBookingId"
+        @close="selectedBookingId = null"
+      />
     </Teleport>
   </div>
 </template>

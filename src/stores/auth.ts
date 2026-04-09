@@ -60,6 +60,15 @@ function parseAuthResponse(data: unknown): AuthResponse | null {
   }
 }
 
+function isTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return Date.now() >= payload.exp * 1000
+  } catch {
+    return true
+  }
+}
+
 function loadFromStorage(): AuthState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -167,7 +176,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // Getters
-  const isLoggedIn = computed(() => !!token.value && !!role.value)
+  const isLoggedIn = computed(() => !!token.value && !!role.value && !isTokenExpired(token.value))
   const isAdmin = computed(() => role.value === 'ADMIN')
   const isSitter = computed(() => role.value === 'SITTER')
   const isUser = computed(() => role.value === 'USER')
@@ -175,7 +184,7 @@ export const useAuthStore = defineStore('auth', () => {
   function getDashboardRoute(): string {
     if (role.value === 'ADMIN') return '/admin/pet-owners'
     if (role.value === 'SITTER') return '/sitterprofile'
-    if (role.value === 'USER') return '/dashboard/owner'
+    if (role.value === 'USER') return '/'
     return '/login'
   }
 

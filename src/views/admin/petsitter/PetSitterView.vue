@@ -37,7 +37,7 @@ async function fetchProfiles(page = 1) {
       page: page - 1, // server is 0-indexed
       size: PAGE_SIZE,
       sortBy: "id",
-      direction: "asc",
+      direction: "desc",
       query: searchQuery.value.trim() || undefined,
       status:
         selectedStatus.value !== "ALL" ? selectedStatus.value : undefined,
