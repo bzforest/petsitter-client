@@ -12,6 +12,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'close'): void;
   (e: 'success'): void;
+  (e: 'already-reported'): void;
 }>();
 
 const MAX_ISSUE_LENGTH = 50;
@@ -52,8 +53,13 @@ const handleSubmit = async () => {
     emit('success');
     emit('close');
   } catch (err: any) {
-    const message = err.response?.data?.message || 'Failed to submit report';
-    issueError.value = message;
+    const message: string = err.response?.data?.message || '';
+    if (message.toLowerCase().includes('already')) {
+      emit('close');
+      emit('already-reported');
+    } else {
+      issueError.value = message || 'Failed to submit report';
+    }
   } finally {
     isSubmitting.value = false;
   }

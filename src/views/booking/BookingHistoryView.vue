@@ -8,6 +8,7 @@ import BookingDetailModal from "@/components/booking/BookingDetailModal.vue";
 import ReviewModal from "@/components/booking/ReviewModal.vue";
 import ReportModal from "@/components/booking/ReportModal.vue";
 import ReportSuccessModal from "@/components/booking/ReportSuccessModal.vue";
+import ReportDuplicateModal from "@/components/booking/ReportDuplicateModal.vue";
 import { PawPrint } from "lucide-vue-next";
 import Button from "@/components/ui/Button.vue";
 
@@ -51,6 +52,7 @@ const selectedDetailBooking = ref<Booking | null>(null);
 // Report State
 const isReportModalOpen = ref(false);
 const isReportSuccessModalOpen = ref(false);
+const isReportDuplicateModalOpen = ref(false);
 const reportingBooking = ref<Booking | null>(null);
 
 const handleOpenReportModal = (booking: Booking) => {
@@ -282,12 +284,19 @@ const formatTime = (timeStr: string) => {
       :bookingId="reportingBooking.id"
       @close="isReportModalOpen = false"
       @success="isReportModalOpen = false; isReportSuccessModalOpen = true"
+      @already-reported="isReportDuplicateModalOpen = true"
     />
 
     <!-- Modal for Report Success -->
     <ReportSuccessModal
       v-if="isReportSuccessModalOpen"
       @close="isReportSuccessModalOpen = false"
+    />
+
+    <!-- Modal for Duplicate Report -->
+    <ReportDuplicateModal
+      v-if="isReportDuplicateModalOpen"
+      @close="isReportDuplicateModalOpen = false"
     />
 
     <!-- Modal for Review -->
