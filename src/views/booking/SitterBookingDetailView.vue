@@ -43,6 +43,11 @@ const showOwnerModal = ref(false);
 
 const bookingId = computed(() => Number(route.params.id));
 
+function extractErrorMessage(error: unknown, fallback: string): string {
+  const maybe = error as { response?: { data?: { message?: string } } };
+  return maybe?.response?.data?.message || fallback;
+}
+
 const canMarkSuccess = computed(() => {
   // Future fallback (time-gated success):        << เช็คเวลาเสร็จสิ้นการบริการ ก่อนถึงจะสามารถกดปุ่มsuccessได้ ป้องกันsitterแอบกดปุ่มเสร็จงานก่อนกำหนด (เผื่อใช้ในอนาคต)>>
   // function bookingEndMs(b: BookingResponse): number {
@@ -92,6 +97,13 @@ const transactionDateLabel = computed(() => {
   return "-";
 });
 
+const ownerDisplayName = computed(() => {
+  if (!booking.value) return "-";
+  return ownerProfile.value?.fullName?.trim()
+    || ownerProfile.value?.email?.trim()
+    || `User #${booking.value.userId}`;
+});
+
 async function loadDetail() {
   try {
     loading.value = true;
@@ -106,7 +118,7 @@ async function loadDetail() {
     try {
       const ownerRes = await getOwnerProfileByUserId(data.userId);
       ownerProfile.value = {
-        fullName: ownerRes.data.fullName || `User #${data.userId}`,
+        fullName: ownerRes.data.fullName || "",
         email: ownerRes.data.email || "-",
         phone: ownerRes.data.phone || "-",
         profileImage: ownerRes.data.profileImage || null,
@@ -115,7 +127,7 @@ async function loadDetail() {
       };
     } catch {
       ownerProfile.value = {
-        fullName: `User #${data.userId}`,
+        fullName: "",
         email: "-",
         phone: "-",
         profileImage: null,
@@ -142,8 +154,8 @@ async function confirmBooking() {
     showToast("Booking confirmed", "success");
     showConfirmModal.value = false;
     await loadDetail();
-  } catch {
-    showToast("Failed to confirm booking", "error");
+  } catch (error) {
+    showToast(extractErrorMessage(error, "Failed to confirm booking"), "error");
   } finally {
     actionLoading.value = false;
   }
@@ -169,8 +181,8 @@ async function startInService() {
     await startInServiceBySitter(bookingId.value);
     showToast("You are now in service", "success");
     await loadDetail();
-  } catch {
-    showToast("Failed to start service", "error");
+  } catch (error) {
+    showToast(extractErrorMessage(error, "Failed to start service"), "error");
   } finally {
     actionLoading.value = false;
   }
@@ -182,8 +194,8 @@ async function completeBooking() {
     await completeBookingBySitter(bookingId.value);
     showToast("Booking marked as success", "success");
     await loadDetail();
-  } catch {
-    showToast("Failed to complete booking", "error");
+  } catch (error) {
+    showToast(extractErrorMessage(error, "Failed to complete booking"), "error");
   } finally {
     actionLoading.value = false;
   }
@@ -220,7 +232,7 @@ onMounted(() => {
         >
           ←
         </RouterLink>
-        <h1 class="headline-4 text-brand-gray-900">{{ ownerProfile?.fullName || `User #${booking?.userId}` }}</h1>
+        <h1 class="headline-4 text-brand-gray-900">{{ ownerDisplayName }}</h1>
         <span
           class="body-3"
           :class="
@@ -291,7 +303,7 @@ onMounted(() => {
       <section class="flex items-start justify-between">
         <div>
           <p class="body-3 text-brand-gray-500">Pet Owner Name</p>
-          <p class="body-2 text-brand-gray-900">{{ ownerProfile?.fullName || `User #${booking.userId}` }}</p>
+          <p class="body-2 text-brand-gray-900">{{ ownerDisplayName }}</p>
         </div>
         <button
           type="button"

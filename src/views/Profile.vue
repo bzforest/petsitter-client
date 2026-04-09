@@ -285,6 +285,7 @@ const statusMap: Record<string, "approved" | "pending" | "rejected"> = {
 const petTypeOptions = [
   { label: "Dog", value: "Dog" },
   { label: "Cat", value: "Cat" },
+  { label: "Bird", value: "Bird" },
   { label: "Rabbit", value: "Rabbit" },
 ];
 

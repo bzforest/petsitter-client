@@ -40,6 +40,23 @@ const router = createRouter({
           name: "sitter-payout",
           component: () => import("../views/payout/PayoutOption.vue"),
         },
+        {
+          path: "calendar",
+          name: "sitter-calendar",
+          component: () => import("../views/booking/SitterCalendarView.vue"),
+        },
+      ],
+    },
+    {
+      path: "/calendar",
+      component: SitterLayout,
+      meta: { requiresAuth: true, roles: ["SITTER", "ADMIN"] },
+      children: [
+        {
+          path: "",
+          name: "sitter-calendar-direct",
+          component: () => import("../views/booking/SitterCalendarView.vue"),
+        },
       ],
     },
     // Public auth routes
