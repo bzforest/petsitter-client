@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ChevronLeft, AlertCircle, User } from "lucide-vue-next";
 import {
@@ -8,7 +8,13 @@ import {
   rejectSitter,
   type SitterProfile,
 } from "@/api/admin/sitterProfiles";
+import {
+  getBookingsBySitterId,
+  type BookingResponse,
+  type BookingStatusApi,
+} from "@/services/booking.service";
 import SitterStatusBadge from "@/components/admin/SitterStatusBadge.vue";
+import AdminBookingDetailModal from "@/components/admin/AdminBookingDetailModal.vue";
 import RejectConfirmPopup from "@/components/ui/RejectConfirmPopup.vue";
 import Button from "@/components/ui/Button.vue";
 import ReadOnlyMap from "@/components/ map/ReadOnlyMap.vue";
@@ -23,6 +29,60 @@ const errorMessage = ref<string | null>(null);
 const isSubmitting = ref(false);
 const showRejectModal = ref(false);
 const activeTab = ref<"profile" | "booking" | "reviews">("profile");
+
+const bookings = ref<BookingResponse[]>([]);
+const bookingsLoading = ref(false);
+const selectedBookingId = ref<number | null>(null);
+
+function labelFromStatus(status: BookingStatusApi) {
+  if (status === "CONFIRMED") return "Waiting for service";
+  if (status === "IN_SERVICE") return "In service";
+  if (status === "COMPLETED") return "Success";
+  if (status === "CANCELLED") return "Cancelled";
+  return "Waiting for confirm";
+}
+
+function classFromStatus(status: BookingStatusApi) {
+  if (status === "CONFIRMED") return "text-brand-orange-700";
+  if (status === "IN_SERVICE") return "text-brand-blue-500";
+  if (status === "COMPLETED") return "text-brand-green-500";
+  if (status === "CANCELLED") return "text-brand-red-500";
+  return "text-brand-pink-500";
+}
+
+function formatBookedDate(b: BookingResponse): string {
+  const fmt = (t: string) => {
+    const [h] = t.split(":");
+    const hour = parseInt(h, 10);
+    const suffix = hour >= 12 ? "PM" : "AM";
+    const display = hour % 12 === 0 ? 12 : hour % 12;
+    return `${display} ${suffix}`;
+  };
+  const start = new Date(b.startDate);
+  const end = new Date(b.endDate);
+  const startLabel = start.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  const endLabel = end.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  if (startLabel === endLabel) return `${startLabel}, ${fmt(b.startTime)} - ${fmt(b.endTime)}`;
+  return `${startLabel}, ${fmt(b.startTime)} - ${endLabel}, ${fmt(b.endTime)}`;
+}
+
+async function loadBookings() {
+  if (!profile.value) return;
+  bookingsLoading.value = true;
+  try {
+    bookings.value = await getBookingsBySitterId(profile.value.userId);
+  } catch {
+    errorMessage.value = "Failed to load bookings.";
+  } finally {
+    bookingsLoading.value = false;
+  }
+}
+
+watch(activeTab, (tab) => {
+  if (tab === "booking" && bookings.value.length === 0 && !bookingsLoading.value) {
+    void loadBookings();
+  }
+});
 
 const PENDING_TEXT = "รอ Pet sitter ดำเนินการอัพเดท";
 
@@ -447,12 +507,47 @@ const gallery = computed(() =>
           </template>
         </div>
 
-        <!-- Booking Tab (placeholder) -->
-        <div
-          v-else-if="activeTab === 'booking'"
-          class="flex-1 flex items-center justify-center py-24 text-brand-gray-400 body-3"
-        >
-          Booking data coming soon.
+        <!-- Booking Tab -->
+        <div v-else-if="activeTab === 'booking'" class="py-6 px-0">
+          <div v-if="bookingsLoading" class="flex items-center justify-center py-20 text-brand-gray-400 body-3">
+            Loading bookings...
+          </div>
+          <div v-else-if="bookings.length === 0" class="flex items-center justify-center py-20 text-brand-gray-400 body-3">
+            No bookings found.
+          </div>
+          <table v-else class="w-full border-collapse">
+            <thead class="bg-brand-black text-brand-white">
+              <tr class="body-3">
+                <th class="px-5 py-3.5 text-left">Pet Owner Name</th>
+                <th class="px-5 py-3.5 text-left">Pet(s)</th>
+                <th class="px-5 py-3.5 text-left">Duration</th>
+                <th class="px-5 py-3.5 text-left">Booked Date</th>
+                <th class="px-5 py-3.5 text-left">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="row in bookings"
+                :key="row.id"
+                class="border-t border-brand-gray-100 body-3 text-brand-gray-700 cursor-pointer hover:bg-brand-gray-50 transition-colors"
+                @click="selectedBookingId = row.id"
+              >
+                <td class="px-5 py-3">
+                  <span
+                    v-if="row.status === 'PENDING' || row.status === 'PAID'"
+                    class="mr-2 inline-block h-2 w-2 rounded-full bg-brand-pink-500"
+                  />
+                  {{ row.ownerName || `User #${row.userId}` }}
+                </td>
+                <td class="px-5 py-3">{{ row.petIds.length }}</td>
+                <td class="px-5 py-3">{{ row.totalHours }} hours</td>
+                <td class="px-5 py-3">{{ formatBookedDate(row) }}</td>
+                <td class="px-5 py-3">
+                  <span :class="classFromStatus(row.status)">• {{ labelFromStatus(row.status) }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <!-- Reviews Tab (placeholder) -->
@@ -480,6 +575,15 @@ const gallery = computed(() =>
           />
         </div>
       </Transition>
+    </Teleport>
+
+    <!-- Booking Detail Modal -->
+    <Teleport to="body">
+      <AdminBookingDetailModal
+        v-if="selectedBookingId !== null"
+        :booking-id="selectedBookingId"
+        @close="selectedBookingId = null"
+      />
     </Teleport>
   </div>
 </template>

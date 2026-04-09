@@ -5,6 +5,7 @@ export type BookingStatusApi = "PENDING" | "PAID" | "CONFIRMED" | "IN_SERVICE" |
 export interface BookingResponse {
   id: number;
   userId: number;
+  ownerName: string | null;
   sitterId: number;
   sitterName: string;
   sitterProfileImage: string | null;
@@ -28,6 +29,11 @@ interface ApiPage<T> {
 
 export const getSitterBookings = async () => {
   const { data } = await apiClient.get<ApiPage<BookingResponse>>("/api/bookings/sitter/me?page=0&size=100");
+  return data.content ?? [];
+};
+
+export const getBookingsBySitterId = async (sitterUserId: number) => {
+  const { data } = await apiClient.get<ApiPage<BookingResponse>>(`/api/bookings/admin/sitter/${sitterUserId}?page=0&size=100`);
   return data.content ?? [];
 };
 
