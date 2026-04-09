@@ -65,11 +65,11 @@ const formatTime = (timeStr: string) => {
       class="absolute top-1/3 right-40 w-24 opacity-70 pointer-events-none"
     />
 
-    <div class="absolute bottom-70 left-0 w-1/3 max-w-sm pointer-events-none">
+    <div class="absolute bottom-55 left-0 w-1/3 max-w-sm pointer-events-none">
       <img src="@/assets/home/cat3.png" class="w-full object-contain" />
     </div>
 
-    <div class="absolute bottom-70 right-0 w-1/3 max-w-sm pointer-events-none">
+    <div class="absolute bottom-55 right-0 w-1/3 max-w-sm pointer-events-none">
       <img src="@/assets/home/dog1.png" class="w-full object-contain" />
     </div>
 

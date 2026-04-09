@@ -6,6 +6,7 @@ import { useBookingStore } from '@/stores/bookingStore'
 import Button from '../ui/Button.vue'
 import DatePickerField from '../ui/DatePickerField.vue'
 import SelectField from '../ui/SelectField.vue'
+import apiClient from '@/api/axios'
 
 const props = withDefaults(defineProps<{
   sitterId: number;
@@ -53,6 +54,7 @@ const date = ref('')
 const startTime = ref('')
 const endTime = ref('')
 const formError = ref('')
+const isChecking = ref(false)
 
 // Filter time options to show only future times if today is selected
 const filteredTimeOptions = computed(() => {
@@ -99,7 +101,7 @@ watch(date, () => {
   endTime.value = ''
 })
 
-const handleContinue = () => {
+const handleContinue = async () => {
   formError.value = ''
   if (!date.value || !startTime.value || !endTime.value) {
     formError.value = 'Please select both a date and a time range.'
@@ -112,16 +114,39 @@ const handleContinue = () => {
     formError.value = 'End time must be after start time.'
     return
   }
-  
-  // Save to Pinia Store
-  bookingStore.setBookingDateTime(props.sitterId, date.value, startTime.value, endTime.value)
-  
-  if (props.mode === 'update') {
-    emit('confirm')
-  } else {
-    // Navigate to full page booking flow
-    router.push(`/sitter/${props.sitterId}/booking`)
-    emit('close')
+
+  try {
+    isChecking.value = true
+    // [Double Check] API Call to verify availability
+    const { data } = await apiClient.get('/api/bookings/check-availability', {
+      params: {
+        sitterId: props.sitterId,
+        startDate: date.value,
+        startTime: startTime.value,
+        endDate: date.value, // Current logic handles single-day bookings
+        endTime: endTime.value
+      }
+    })
+
+    if (!data.available) {
+      formError.value = 'This sitter is already booked for the selected time slot. Please choose another time.'
+      return
+    }
+    
+    // Save to Pinia Store
+    bookingStore.setBookingDateTime(props.sitterId, date.value, startTime.value, endTime.value)
+    
+    if (props.mode === 'update') {
+      emit('confirm')
+    } else {
+      // Navigate to full page booking flow
+      router.push(`/sitter/${props.sitterId}/booking`)
+      emit('close')
+    }
+  } catch (err: any) {
+    formError.value = err.response?.data?.message || 'Failed to check availability. Please try again.'
+  } finally {
+    isChecking.value = false
   }
 }
 </script>
@@ -135,8 +160,8 @@ const handleContinue = () => {
         <h3 class="headline-3 text-brand-gray-600">{{ mode === 'update' ? 'Update Booking' : 'Booking' }}</h3>
         <button 
           @click="$emit('close')" 
-          :disabled="isSubmitting"
-          :class="[isSubmitting ? 'opacity-30 cursor-not-allowed' : 'hover:text-brand-gray-700 cursor-pointer']"
+          :disabled="isSubmitting || isChecking"
+          :class="[(isSubmitting || isChecking) ? 'opacity-30 cursor-not-allowed' : 'hover:text-brand-gray-700 cursor-pointer']"
           class="text-brand-gray-500 transition"
         >
           <X class="w-6 h-6" />
@@ -147,7 +172,7 @@ const handleContinue = () => {
       <div class="p-6">
         <p class="body-1 text-brand-gray-500 mb-6">Select date and time you want to schedule the service.</p>
         
-        <div class="flex flex-col gap-5" :class="{'opacity-60 pointer-events-none': isSubmitting}">
+        <div class="flex flex-col gap-5" :class="{'opacity-60 pointer-events-none': isSubmitting || isChecking}">
           <!-- Date Field -->
           <div class="relative">
             <DatePickerField
@@ -190,13 +215,13 @@ const handleContinue = () => {
 
         <!-- Continue Button -->
         <Button 
-          :disabled="!date || !startTime || !endTime || isSubmitting"
-          :loading="isSubmitting"
+          :disabled="!date || !startTime || !endTime || isSubmitting || isChecking"
+          :loading="isSubmitting || isChecking"
           @click="handleContinue" 
           variant="primary"
           class="w-full mt-4 rounded-full cursor-pointer"
         >
-          {{ mode === 'update' ? 'Update' : 'Continue' }}
+          {{ mode === 'update' ? (isSubmitting || isChecking ? 'Updating...' : 'Update') : (isChecking ? 'Checking...' : 'Continue') }}
         </Button>
       </div>
 
