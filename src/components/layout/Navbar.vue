@@ -74,6 +74,10 @@ onMounted(() => {
 watch(() => authStore.isLoggedIn, (isLoggedIn) => {
   if (isLoggedIn) loadProfileImage()
 })
+
+const goToMessages = () => {
+  router.push('/chat'); // ไปหน้าแชทเฉยๆ ไม่ต้องพก ID ไป
+}
 </script>
 
 <template>
@@ -124,6 +128,7 @@ watch(() => authStore.isLoggedIn, (isLoggedIn) => {
             </button>
             <!-- Chat -->
             <button
+              @click="goToMessages"
               class="w-12 h-12 rounded-full flex items-center justify-center bg-brand-gray-50 hover:bg-brand-gray-100 transition"
             >
               <Chat class="text-brand-gray-300 hover:text-black transition" />
