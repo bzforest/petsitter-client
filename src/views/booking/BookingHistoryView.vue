@@ -6,6 +6,8 @@ import PaginationField from "@/components/ui/PaginationField.vue";
 import BookingDateTimeModal from "@/components/booking/BookingDateTimeModal.vue";
 import BookingDetailModal from "@/components/booking/BookingDetailModal.vue";
 import ReviewModal from "@/components/booking/ReviewModal.vue";
+import ReportModal from "@/components/booking/ReportModal.vue";
+import ReportSuccessModal from "@/components/booking/ReportSuccessModal.vue";
 import { PawPrint } from "lucide-vue-next";
 import Button from "@/components/ui/Button.vue";
 
@@ -45,6 +47,16 @@ const isReviewModalOpen = ref(false);
 const isSubmittingUpdate = ref(false);
 const editingBooking = ref<Booking | null>(null);
 const selectedDetailBooking = ref<Booking | null>(null);
+
+// Report State
+const isReportModalOpen = ref(false);
+const isReportSuccessModalOpen = ref(false);
+const reportingBooking = ref<Booking | null>(null);
+
+const handleOpenReportModal = (booking: Booking) => {
+  reportingBooking.value = booking;
+  isReportModalOpen.value = true;
+};
 
 // Review State
 const reviewMode = ref<'create' | 'edit'>('create');
@@ -232,6 +244,7 @@ const formatTime = (timeStr: string) => {
           @click="handleOpenDetailModal(booking)"
           @open-change="handleOpenChangeModal(booking)"
           @review="handleOpenReviewModal(booking)"
+          @report="handleOpenReportModal(booking)"
         />
 
         <!-- Pagination -->
@@ -261,6 +274,20 @@ const formatTime = (timeStr: string) => {
       mode="update"
       @close="isDateTimeModalOpen = false"
       @confirm="handleUpdateBooking"
+    />
+
+    <!-- Modal for Report -->
+    <ReportModal
+      v-if="isReportModalOpen && reportingBooking"
+      :bookingId="reportingBooking.id"
+      @close="isReportModalOpen = false"
+      @success="isReportModalOpen = false; isReportSuccessModalOpen = true"
+    />
+
+    <!-- Modal for Report Success -->
+    <ReportSuccessModal
+      v-if="isReportSuccessModalOpen"
+      @close="isReportSuccessModalOpen = false"
     />
 
     <!-- Modal for Review -->

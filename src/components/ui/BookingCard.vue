@@ -31,6 +31,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
     (e: 'open-change'): void;
     (e: 'review'): void;
+    (e: 'report'): void;
     (e: 'click'): void;
 }>()
 
@@ -143,7 +144,7 @@ const handleMessage = () => {
       
       <div class="flex flex-row items-center justify-end gap-2 w-full md:w-auto mt-2 md:mt-0">
         
-        <button @click.stop class="body-3 font-bold text-brand-orange-700 hover:text-brand-orange-500 transition-colors px-2 whitespace-nowrap shrink-0 cursor-pointer">
+        <button @click.stop="emit('report')" class="body-3 font-bold text-brand-orange-700 hover:text-brand-orange-500 transition-colors px-2 whitespace-nowrap shrink-0 cursor-pointer">
           Report
         </button>
         
