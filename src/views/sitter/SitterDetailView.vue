@@ -208,7 +208,7 @@ const handleBookNow = () => {
 
 const handleMessage = () => {
   //  ดึง ID ของ Sitter คนนี้ออกมา 
-  const targetUserId = sitter.value.userId || sitter.value.id; 
+  const targetUserId = sitter.value?.userId || sitter.value?.id; 
   
   if (targetUserId) {
     // สั่งเปลี่ยนหน้าต่างไปที่ /chat พร้อมแนบ Query ?newChat=เลขไอดี
