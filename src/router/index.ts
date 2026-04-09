@@ -35,6 +35,11 @@ const router = createRouter({
           name: "sitter-booking-detail",
           component: () => import("../views/booking/SitterBookingDetailView.vue"),
         },
+        {
+          path: "payout",
+          name: "sitter-payout",
+          component: () => import("../views/payout/PayoutOption.vue"),
+        },
       ],
     },
     // Public auth routes
@@ -155,11 +160,6 @@ const router = createRouter({
       ],
     },
 
-    // Fallback
-    {
-      path: "/:pathMatch(.*)*",
-      redirect: "/",
-    },
     {
       path: "/Search",
       name: "SearchMap",
@@ -196,6 +196,11 @@ const router = createRouter({
       path: '/chat',
       name: 'chat',
       component: () => import('@/views/chat/MessagesView.vue') 
+    },
+    // Fallback - MUST BE LAST
+    {
+      path: "/:pathMatch(.*)*",
+      redirect: "/",
     },
   ],
 });
