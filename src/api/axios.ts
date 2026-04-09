@@ -18,12 +18,14 @@ apiClient.interceptors.request.use((config) => {
 })
 
 // Response interceptor: on 401 → logout and redirect to /login
+// Dynamic import ใช้เพื่อหลีกเลี่ยง circular dependency (auth.ts import apiClient อยู่แล้ว)
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('auth')
+      const { useAuthStore } = await import('@/stores/auth')
+      const authStore = useAuthStore()
+      await authStore.logout()
       await router.push('/login')
     }
     return Promise.reject(error)
