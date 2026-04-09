@@ -11,6 +11,7 @@ import {
 import SitterStatusBadge from "@/components/admin/SitterStatusBadge.vue";
 import RejectConfirmPopup from "@/components/ui/RejectConfirmPopup.vue";
 import Button from "@/components/ui/Button.vue";
+import ReadOnlyMap from "@/components/ map/ReadOnlyMap.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -67,16 +68,6 @@ async function handleReject(reason: string) {
 }
 
 // Helpers function
-function formatDate(dateStr: string | null): string | null {
-  if (!dateStr) return null;
-  const d = new Date(dateStr);
-  return d.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
-
 function parsePetTypes(petTypes: string | null): string[] {
   if (!petTypes) return [];
   return petTypes
@@ -91,16 +82,13 @@ const displayName = computed(
 
 // Derived display values (null = no data → show pending text)
 const fullName = computed(() => profile.value?.fullName?.trim() || null);
+const isApproved = computed(() => profile.value?.status === "APPROVED");
 const experience = computed(() =>
   profile.value?.experience != null
     ? `${profile.value.experience} Year${profile.value.experience !== 1 ? "s" : ""}`
     : null,
 );
 const phone = computed(() => profile.value?.phone?.trim() || null);
-const idNumber = computed(() => profile.value?.idNumber?.trim() || null);
-const dateOfBirth = computed(() =>
-  formatDate(profile.value?.dateOfBirth ?? null),
-);
 const bio = computed(() => profile.value?.bio?.trim() || null);
 
 // APPROVED section
@@ -108,7 +96,9 @@ const tradeName = computed(() => profile.value?.tradeName?.trim() || null);
 const petTypesList = computed(() =>
   parsePetTypes(profile.value?.petTypes ?? null),
 );
-const services = computed(() => profile.value?.services?.trim() || null);
+const services = computed(
+  () => profile.value?.servicesDescription?.trim() || null,
+);
 const placeDescription = computed(
   () => profile.value?.placeDescription?.trim() || null,
 );
@@ -123,6 +113,9 @@ const address = computed(() => {
   ].filter(Boolean) as string[];
   return parts.length > 0 ? parts.join(", ") : null;
 });
+const hasCoords = computed(
+  () => profile.value?.latitude != null && profile.value?.longitude != null,
+);
 const gallery = computed(() =>
   profile.value?.gallery && profile.value.gallery.length > 0
     ? profile.value.gallery
@@ -232,8 +225,7 @@ const gallery = computed(() =>
         <span>
           Their request has not been approved
           <span v-if="profile.rejectReason"
-            >: '<em>{{ profile.rejectReason }}</em
-            >'</span
+            >: '<em>{{ profile.rejectReason }}</em> '</span
           >
         </span>
       </div>
@@ -298,8 +290,8 @@ const gallery = computed(() =>
                   </p>
                 </div>
 
-                <!-- Experience -->
-                <div class="flex flex-col gap-1">
+                <!-- Experience — แสดงเฉพาะเมื่อ APPROVED -->
+                <div v-if="isApproved" class="flex flex-col gap-1">
                   <p class="headline-4 font-bold text-brand-gray-300">
                     Experience
                   </p>
@@ -316,32 +308,6 @@ const gallery = computed(() =>
                   <p class="headline-4 font-bold text-brand-gray-300">Phone</p>
                   <p v-if="phone" class="body-2 text-brand-black">
                     {{ phone }}
-                  </p>
-                  <p v-else class="body-2 text-red-500 font-medium">
-                    {{ PENDING_TEXT }}
-                  </p>
-                </div>
-
-                <!-- ID Number -->
-                <div class="flex flex-col gap-1">
-                  <p class="headline-4 font-bold text-brand-gray-300">
-                    ID Number
-                  </p>
-                  <p v-if="idNumber" class="body-2 text-brand-black">
-                    {{ idNumber }}
-                  </p>
-                  <p v-else class="body-2 text-red-500 font-medium">
-                    {{ PENDING_TEXT }}
-                  </p>
-                </div>
-
-                <!-- Date of Birth -->
-                <div class="flex flex-col gap-1">
-                  <p class="headline-4 font-bold text-brand-gray-300">
-                    Date of Birth
-                  </p>
-                  <p v-if="dateOfBirth" class="body-2 text-brand-black">
-                    {{ dateOfBirth }}
                   </p>
                   <p v-else class="body-2 text-red-500 font-medium">
                     {{ PENDING_TEXT }}
@@ -467,6 +433,16 @@ const gallery = computed(() =>
                   {{ PENDING_TEXT }}
                 </p>
               </div>
+
+              <!-- Map — แสดงเมื่อมี lat/lng -->
+              <ReadOnlyMap
+                v-if="hasCoords"
+                :lat="profile.latitude!"
+                :lng="profile.longitude!"
+              />
+              <p v-else class="body-3 text-brand-gray-400 italic">
+                No location pin set yet.
+              </p>
             </div>
           </template>
         </div>
