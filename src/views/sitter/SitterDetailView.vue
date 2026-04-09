@@ -453,6 +453,7 @@ const displayGallery = computed(() => {
               <PaginationField 
                 :totalPages="totalPages"
                 :currentPage="currentPage"
+                :disableDefaultScroll="true"
                 @update:currentPage="handlePageChange"
               />
             </div>
@@ -556,5 +557,11 @@ const displayGallery = computed(() => {
   width: 56px;
   height: 56px;
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+#map .leaflet-pane,
+#map .leaflet-top,
+#map .leaflet-bottom {
+  z-index: 1 !important;
 }
 </style>

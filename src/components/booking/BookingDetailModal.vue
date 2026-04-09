@@ -7,6 +7,7 @@ interface Booking {
   id: number;
   sitterId: number;
   sitterName: string;
+  sitterProfileId: number;
   petNames: string[];
   startDate: string;
   endDate: string;
@@ -15,6 +16,7 @@ interface Booking {
   totalHours?: number;
   totalPrice: number;
   status: string;
+  createdAt?: any;
 }
 
 const props = defineProps<{
@@ -76,16 +78,23 @@ const formatTime = (timeStr: string) => {
       <!-- Body -->
       <div class="p-8 space-y-6">
         
-        <!-- Status & Transaction -->
-        <div class="space-y-3">
-          <Badge :label="badgeProps.label" variant="status" :color="badgeProps.color" />
-          
-          <div class="space-y-1">
-            <p class="body-2 text-brand-gray-300">Transaction date: {{ formatDate(booking.startDate) }}</p>
-            <p class="body-2 text-brand-gray-300">Transaction No. : #{{ booking.id }}</p>
+        <!-- Status & Transaction & link sitter profile -->
+        <div class="flex items-center justify-between">
+          <div class="space-y-3">
+            <Badge :label="badgeProps.label" variant="status" :color="badgeProps.color" />
+            
+            <div class="space-y-1">
+              <p class="body-2 text-brand-gray-300">Transaction date: {{ formatDate(booking.createdAt) }}</p>
+              <p class="body-2 text-brand-gray-300">Transaction No. : #{{ booking.id }}</p>
+            </div>
           </div>
+          <router-link 
+            :to="`/sitter/${booking.sitterProfileId}`" 
+            class="flex items-center gap-2 text-brand-orange-500 font-bold hover:text-brand-orange-600 transition cursor-pointer"
+          >
+            View Pet Sitter
+          </router-link>
         </div>
-
         <!-- Sitter -->
         <div class="flex items-center justify-between gap-4">
           <div class="space-y-1">

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from "vue";
 import apiClient from "@/api/axios";
-import { useAuthStore } from "@/stores/auth";
 import BookingCard from "@/components/ui/BookingCard.vue";
 import PaginationField from "@/components/ui/PaginationField.vue";
 import BookingDateTimeModal from "@/components/booking/BookingDateTimeModal.vue";
@@ -14,7 +13,10 @@ interface Booking {
   id: number;
   sitterId: number;
   sitterName: string;
+  sitterFullName: string;
+  sitterProfileId: number;
   sitterProfileImage?: string | null;
+  ownerName: string;
   petNames: string[];
   startDate: string;
   endDate: string;
@@ -24,9 +26,9 @@ interface Booking {
   totalPrice: number;
   status: string;
   reviewId?: number | null;
+  createdAt?: any;
 }
 
-const authStore = useAuthStore();
 const bookings = ref<Booking[]>([]);
 const isLoading = ref(true);
 
@@ -216,8 +218,8 @@ const formatTime = (timeStr: string) => {
           :key="booking.id"
           :partnerId="booking.sitterId"
           :sitterName="booking.sitterName"
-          :ownerName="authStore.email || 'Pet Owner'"
-          :transactionDate="formatDate(booking.startDate)"
+          :ownerName="booking.sitterFullName"
+          :transactionDate="formatDate(booking.createdAt)"
           :status="getBookingCardStatus(booking)"
           :bookingDate="formatDate(booking.startDate)"
           :bookingTime="`${formatTime(booking.startTime)} - ${formatTime(booking.endTime)}`"
