@@ -174,6 +174,11 @@ const router = createRouter({
           path: "reports",
           component: () => import("@/views/admin/report/ReportView.vue"),
         },
+        {
+          path: "reports/:id",
+          name: "admin-report-detail",
+          component: () => import("@/views/admin/report/AdminReportDetailView.vue"),
+        },
       ],
     },
 

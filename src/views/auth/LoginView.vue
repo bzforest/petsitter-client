@@ -286,10 +286,13 @@ async function onRoleConfirmed(role: "USER" | "SITTER") {
         <button
           type="submit"
           :disabled="isLoading"
-          class="w-full py-3.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-full transition-colors text-sm mt-2"
+          class="w-full py-3.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-full transition-colors text-sm mt-2 flex items-center justify-center gap-2"
         >
-          <span v-if="isLoading">Logging in…</span>
-          <span v-else>Log In</span>
+          <div
+            v-if="isLoading"
+            class="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0"
+          />
+          <span>{{ isLoading ? 'Logging in…' : 'Log In' }}</span>
         </button>
       </form>
 

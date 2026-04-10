@@ -6,7 +6,7 @@ import adminLogo from "@/assets/logo/AdminSidebar-logo.svg";
 import Profile from "@/components/icons/Profile.vue";
 import Logout from "@/components/icons/Logout.vue";
 import Paws from "@/components/icons/Paws.vue";
-import IconBell from "@/components/icons/IconBell.vue";
+import { AlertTriangle } from "lucide-vue-next";
 
 // ── Store ──────────────────────────────────────────────────
 const router = useRouter();
@@ -48,9 +48,10 @@ const IconSitter = defineComponent({
 
 const IconReport = defineComponent({
   render: () =>
-    h(IconBell, {
-      size: 24,
-      color: "currentColor",
+    h(AlertTriangle, {
+      size: 16,
+      strokeWidth: 2,
+      class: "text-current shrink-0",
     }),
 });
 
@@ -108,7 +109,7 @@ const navItems = [
 
         <!-- Icon -->
         <span class="shrink-0 flex items-center justify-center">
-          <component :is="item.icon" class="w-[30px] h-[30px]" />
+          <component :is="item.icon" class="w-7 h-7" />
         </span>
 
         <!-- Label -->

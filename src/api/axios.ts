@@ -1,5 +1,6 @@
 import axios from 'axios'
 import router from '@/router'
+import { supabase } from '@/lib/supabase'
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -17,15 +18,15 @@ apiClient.interceptors.request.use((config) => {
   return config
 })
 
-// Response interceptor: on 401 → logout and redirect to /login
-// Dynamic import ใช้เพื่อหลีกเลี่ยง circular dependency (auth.ts import apiClient อยู่แล้ว)
+// Response interceptor: on 401 → clear auth state and redirect to /login
+// Inline logout to avoid circular dependency (auth.ts already imports apiClient)
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      const { useAuthStore } = await import('@/stores/auth')
-      const authStore = useAuthStore()
-      await authStore.logout()
+      localStorage.removeItem('auth')
+      localStorage.removeItem('token')
+      await supabase.auth.signOut()
       await router.push('/login')
     }
     return Promise.reject(error)
