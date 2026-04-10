@@ -28,7 +28,7 @@ function confirm() {
 <template>
   <!-- Backdrop -->
   <Teleport to="body">
-    <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4 pb-4 sm:pb-0">
+    <div class="fixed inset-0 z-50 flex items-center justify-center px-4">
 
       <!-- Overlay -->
       <div

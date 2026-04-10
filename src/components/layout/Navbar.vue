@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import Button from "@/components/ui/Button.vue";
 import IconBell from "@/components/icons/IconBell.vue";
 import Chat from "@/components/icons/Chat.vue";
@@ -10,13 +10,13 @@ import Logout from "@/components/icons/Logout.vue";
 import HamburgerMenu from "@/components/icons/HamburgerMenu.vue";
 
 // 🟢 1. Import Store และ Router เข้ามา
-import { useAuthStore } from '@/stores/auth'
-import { useRouter } from 'vue-router'
-import apiClient from '@/api/axios'
+import { useAuthStore } from "@/stores/auth";
+import { useRouter } from "vue-router";
+import apiClient from "@/api/axios";
 
 // 🟢 2. เรียกใช้งาน Store และ Router
-const authStore = useAuthStore()
-const router = useRouter()
+const authStore = useAuthStore();
+const router = useRouter();
 
 // --- Custom Directive: ปิด dropdown เมื่อคลิกนอก element ---
 const vClickOutside = {
@@ -47,37 +47,52 @@ function closeDropdown() {
 
 // 🟢 3. สร้างฟังก์ชัน Logout ของจริง
 function handleLogout() {
-  authStore.logout() // เคลียร์ Token และ State ใน Store
+  authStore.logout(); // เคลียร์ Token และ State ใน Store
   showDropdown.value = false;
-  router.push('/login') // เด้งกลับไปหน้า Login
+  router.push("/login"); // เด้งกลับไปหน้า Login
 }
 
-const profileImage = ref("https://ui-avatars.com/api/?name=User&background=ffd5b4&color=ff6b00");
+const profileImage = ref(
+  "https://ui-avatars.com/api/?name=User&background=ffd5b4&color=ff6b00",
+);
 
 const loadProfileImage = async () => {
   if (authStore.isLoggedIn) {
     try {
-      const { data } = await apiClient.get('/api/user-profiles/me')
+      const { data } = await apiClient.get("/api/user-profiles/me");
       if (data.profile_image) {
-        profileImage.value = data.profile_image
+        profileImage.value = data.profile_image;
       }
     } catch (error) {
-      console.error("Could not load profile image for navbar", error)
+      console.error("Could not load profile image for navbar", error);
     }
   }
+};
+
+function handleScroll() {
+  if (showMobileMenu.value) showMobileMenu.value = false;
+  if (showDropdown.value) showDropdown.value = false;
 }
 
 onMounted(() => {
-  loadProfileImage()
-})
+  loadProfileImage();
+  window.addEventListener("scroll", handleScroll, { passive: true });
+});
 
-watch(() => authStore.isLoggedIn, (isLoggedIn) => {
-  if (isLoggedIn) loadProfileImage()
-})
+onUnmounted(() => {
+  window.removeEventListener("scroll", handleScroll);
+});
+
+watch(
+  () => authStore.isLoggedIn,
+  (isLoggedIn) => {
+    if (isLoggedIn) loadProfileImage();
+  },
+);
 
 const goToMessages = () => {
-  router.push('/chat'); // ไปหน้าแชทเฉยๆ ไม่ต้องพก ID ไป
-}
+  router.push("/chat"); // ไปหน้าแชทเฉยๆ ไม่ต้องพก ID ไป
+};
 </script>
 
 <template>
@@ -110,7 +125,10 @@ const goToMessages = () => {
           >
             Login
           </RouterLink>
-          <Button variant="primary" class="cursor-pointer" as="link" to="/find-sitter"
+          <Button
+            variant="primary"
+            class="cursor-pointer"
+            @click="router.push('/Search')"
             >Find A Pet Sitter</Button
           >
         </template>
@@ -131,7 +149,9 @@ const goToMessages = () => {
               @click="goToMessages"
               class="w-12 h-12 rounded-full flex items-center justify-center bg-brand-gray-50 hover:bg-brand-gray-100 transition"
             >
-              <Chat class="text-brand-gray-300 hover:text-black transition cursor-pointer" />
+              <Chat
+                class="text-brand-gray-300 hover:text-black transition cursor-pointer"
+              />
             </button>
 
             <!-- Avatar + Dropdown -->
@@ -200,7 +220,10 @@ const goToMessages = () => {
           </div>
 
           <!-- Find A Pet Sitter -->
-          <Button variant="primary" as="link" to="/find-sitter" class="cursor-pointer"
+          <Button
+            variant="primary"
+            @click="router.push('/Search')"
+            class="cursor-pointer"
             >Find A Pet Sitter</Button
           >
         </template>
@@ -214,74 +237,94 @@ const goToMessages = () => {
         <HamburgerMenu />
       </button>
     </div>
+  </nav>
 
-    <!-- Mobile Menu -->
-    <Transition
-      enter-from-class="opacity-0 -translate-y-2"
-      enter-active-class="transition duration-150"
-      leave-to-class="opacity-0 -translate-y-2"
-      leave-active-class="transition duration-150"
+  <!-- Mobile Menu Backdrop -->
+  <Transition
+    enter-from-class="opacity-0"
+    enter-active-class="transition duration-150"
+    leave-to-class="opacity-0"
+    leave-active-class="transition duration-150"
+  >
+    <div
+      v-if="showMobileMenu"
+      class="md:hidden fixed inset-0 top-20 bg-black/30 z-40"
+      @click="showMobileMenu = false"
+    />
+  </Transition>
+
+  <!-- Mobile Menu -->
+  <Transition
+    enter-from-class="opacity-0 -translate-y-2"
+    enter-active-class="transition duration-150"
+    leave-to-class="opacity-0 -translate-y-2"
+    leave-active-class="transition duration-150"
+  >
+    <div
+      v-if="showMobileMenu"
+      class="md:hidden fixed top-20 left-0 right-0 bg-white border-t border-brand-gray-100 px-6 py-4 z-50 shadow-lg"
     >
-      <div
-        v-if="showMobileMenu"
-        class="md:hidden bg-white border-t border-brand-gray-100 px-6 py-4 space-y-3"
-      >
-        <template v-if="!authStore.isLoggedIn">
+      <template v-if="!authStore.isLoggedIn">
+        <div class="flex flex-col">
           <RouterLink
             to="/register"
-            class="block body-2 text-brand-black hover:text-brand-orange-700 transition py-2"
+            class="block body-2 text-brand-black hover:text-brand-orange-700 transition py-3"
             @click="showMobileMenu = false"
             >Register
           </RouterLink>
           <RouterLink
             to="/login"
-            class="block body-2 text-brand-black hover:text-brand-orange-700 transition py-2"
+            class="block body-2 text-brand-black hover:text-brand-orange-700 transition py-3"
+            @click="showMobileMenu = false"
             >Login
           </RouterLink>
-        </template>
-        <template v-else>
-          <div class="flex flex-col gap-5 mb-7">
-            <RouterLink
-              to="/account/profile"
-              @click="showMobileMenu = false"
-              class="flex items-center gap-3 body-2 text-brand-black hover:text-brand-gray-500 transition"
-            >
-              <Profile />
-              Profile
-            </RouterLink>
-            <RouterLink
-              to="/account/yourpet"
-              class="flex items-center gap-3 body-2 text-brand-black hover:text-brand-gray-500 transition"
-              @click="showMobileMenu = false"
-            >
-              <Paws />
-              Your Pet
-            </RouterLink>
-            <RouterLink
-              to="/account/bookings"
-              class="flex items-center gap-3 body-2 text-brand-black hover:text-brand-gray-500 transition"
-              @click="showMobileMenu = false"
-            >
-              <History />
-              History
-            </RouterLink>
-            <hr class="border-brand-gray-100 my-1 -mx-10" />
-            <button
-              @click="handleLogout"
-              class="flex items-center gap-3 body-2 text-brand-black hover:text-brand-gray-500 transition"
-            >
-              <Logout />
-              Log out
-            </button>
-          </div>
-        </template>
+        </div>
+      </template>
+      <template v-else>
+        <div class="flex flex-col">
+          <RouterLink
+            to="/account/profile"
+            @click="showMobileMenu = false"
+            class="flex items-center gap-3 body-2 text-brand-black hover:text-brand-gray-500 transition py-3"
+          >
+            <Profile />
+            Profile
+          </RouterLink>
+          <RouterLink
+            to="/account/yourpet"
+            class="flex items-center gap-3 body-2 text-brand-black hover:text-brand-gray-500 transition py-3"
+            @click="showMobileMenu = false"
+          >
+            <Paws />
+            Your Pet
+          </RouterLink>
+          <RouterLink
+            to="/account/bookings"
+            class="flex items-center gap-3 body-2 text-brand-black hover:text-brand-gray-500 transition py-3"
+            @click="showMobileMenu = false"
+          >
+            <History />
+            History
+          </RouterLink>
+          <hr class="border-brand-gray-100 my-1" />
+          <button
+            @click="handleLogout"
+            class="flex items-center gap-3 body-2 text-brand-black hover:text-brand-gray-500 transition py-3"
+          >
+            <Logout />
+            Log out
+          </button>
+        </div>
+      </template>
+      <div class="mt-3">
         <RouterLink
-          to="/find-sitter"
+          to="/Search"
           class="w-full"
+          @click="showMobileMenu = false"
         >
-          <Button variant="primary" class="w-full cursor-pointer">Find A Pet Sitter</Button>
+          <Button variant="primary" class="w-full cursor-pointer" @click="router.push('/Search')">Find A Pet Sitter</Button>
         </RouterLink>
       </div>
-    </Transition>
-  </nav>
+    </div>
+  </Transition>
 </template>
