@@ -87,7 +87,7 @@ const deletePet = async (id: number) => {
         </div>
         <h3 class="headline-3 text-brand-gray-900 mb-2">No pets found</h3>
         <p class="body-2 text-brand-gray-500 mb-8 max-w-sm">You haven't added any pets yet. Add your first pet to start booking services!</p>
-        <Button variant="primary" class="rounded-full px-10" @click="openAddModal">Add Your First Pet</Button>
+        <Button variant="primary" class="rounded-full px-10 cursor-pointer" @click="openAddModal">Add Your First Pet</Button>
       </div>
 
       <!-- Pet List -->

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, nextTick } from "vue";
-import { useRoute } from "vue-router";
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 import Navbar from "@/components/layout/Navbar.vue";
 import Footer from "@/components/layout/Footer.vue";
 import Badge from "@/components/ui/Badge.vue";
@@ -18,10 +18,15 @@ import "leaflet/dist/leaflet.css";
 import pinSelectedImg from "@/assets/Pin Selection/Property 1=Selected.png";
 
 const route = useRoute();
-const router = useRouter()
+const router = useRouter();
+const authStore = useAuthStore();
 const sitterId = route.params.id;
 
 const showModal = ref(false);
+
+const isOwnProfile = computed(() => {
+  return authStore.userId === sitter.value?.userId;
+});
 
 // --- Type Definitions ---
 interface Review {
@@ -77,7 +82,11 @@ const sitterUserId = ref<number | null>(null);
 const sitter = ref<SitterProfile | null>(null);
 const isLoading = ref(true);
 
-const fetchReviews = async (page = 1, rating: number | null = null, targetUserId: number | null = null) => {
+const fetchReviews = async (
+  page = 1,
+  rating: number | null = null,
+  targetUserId: number | null = null,
+) => {
   // Use targetUserId if provided (initial load), otherwise use stored sitterUserId
   const uid = targetUserId || sitterUserId.value;
   if (!uid) return;
@@ -109,18 +118,18 @@ const handleFilterReviews = (rating: number | null) => {
 
 const handlePageChange = (newPage: number) => {
   fetchReviews(newPage, selectedRating.value);
-  
+
   // Smooth scroll to reviews section
   const el = document.getElementById("reviews-section");
   if (el) {
-    el.scrollIntoView({ behavior: 'smooth' });
+    el.scrollIntoView({ behavior: "smooth" });
   }
 };
 
 onMounted(async () => {
   try {
     isLoading.value = true;
-    
+
     // 1. Fetch Sitter Profile FIRST to get real User ID
     const profileRes = await apiClient.get(`/api/sitter-profiles/${sitterId}`);
     const data = profileRes.data;
@@ -203,6 +212,7 @@ const initMap = () => {
 };
 
 const handleBookNow = () => {
+  if (isOwnProfile.value) return;
   showModal.value = true;
 };
 
@@ -340,7 +350,11 @@ const displayGallery = computed(() => {
                   v-for="i in 5"
                   :key="i"
                   class="w-4 h-4"
-                  :class="i <= sitter.rating ? 'text-brand-green-500 fill-brand-green-500' : 'text-brand-gray-300 fill-brand-gray-300'"
+                  :class="
+                    i <= sitter.rating
+                      ? 'text-brand-green-500 fill-brand-green-500'
+                      : 'text-brand-gray-300 fill-brand-gray-300'
+                  "
                 />
               </div>
 
@@ -373,11 +387,18 @@ const displayGallery = computed(() => {
                 </Button>
 
                 <Button
+                  v-if="!isOwnProfile"
                   @click="handleBookNow"
                   variant="primary"
                   class="w-full cursor-pointer rounded-full sm:w-1/2"
                 >
                   Book Now
+                </Button>
+                <Button v-else 
+                variant="primary"
+                :disabled="true"
+                class="rounded-full w-1/2">
+                  Your Profile
                 </Button>
               </div>
             </div>
@@ -417,7 +438,10 @@ const displayGallery = computed(() => {
                       : 'text-brand-gray-500 border-brand-gray-200 hover:bg-brand-gray-50'"
                     class="flex cursor-pointer items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-bold transition sm:px-5"
                   >
-                    {{ star }} <Star class="w-3.5 h-3.5 fill-brand-green-500 text-brand-green-500" />
+                    {{ star }}
+                    <Star
+                      class="w-3.5 h-3.5 fill-brand-green-500 text-brand-green-500"
+                    />
                   </button>
                 </div>
               </div>
@@ -426,27 +450,44 @@ const displayGallery = computed(() => {
             <!-- Reviews List -->
             <div class="relative min-h-50">
               <!-- Reviews Loading Overlay -->
-              <div v-if="reviewsLoading" class="absolute inset-0 bg-white/50 z-10 flex justify-center items-center">
-                <div class="w-8 h-8 border-3 border-brand-orange-500 border-t-transparent rounded-full animate-spin"></div>
+              <div
+                v-if="reviewsLoading"
+                class="absolute inset-0 bg-white/50 z-10 flex justify-center items-center"
+              >
+                <div
+                  class="w-8 h-8 border-3 border-brand-orange-500 border-t-transparent rounded-full animate-spin"
+                ></div>
               </div>
 
               <div v-if="reviewsList.length > 0" class="flex flex-col">
-                 <ReviewCard 
+                <ReviewCard
                   v-for="review in reviewsList"
                   :key="review.id"
                   :reviewerName="review.userName"
                   :avatarUrl="review.userProfileImage ?? undefined"
                   :rating="review.rating"
                   :comment="review.comment"
-                  :date="new Date(review.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })"
-                 />
+                  :date="
+                    new Date(review.createdAt).toLocaleDateString('en-GB', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })
+                  "
+                />
               </div>
               <div v-else class="text-center py-16">
-                <div class="w-16 h-16 bg-brand-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div
+                  class="w-16 h-16 bg-brand-gray-50 rounded-full flex items-center justify-center mx-auto mb-4"
+                >
                   <Star class="w-8 h-8 text-brand-gray-300" />
                 </div>
-                <p class="headline-4 text-brand-gray-400">No reviews found for this rating.</p>
-                <p class="body-2 text-brand-gray-300 mt-1">Try selecting a different filter or check back later.</p>
+                <p class="headline-4 text-brand-gray-400">
+                  No reviews found for this rating.
+                </p>
+                <p class="body-2 text-brand-gray-300 mt-1">
+                  Try selecting a different filter or check back later.
+                </p>
               </div>
             </div>
 
@@ -494,7 +535,11 @@ const displayGallery = computed(() => {
                 v-for="i in 5"
                 :key="i"
                 class="w-4 h-4"
-                :class="i <= sitter.rating ? 'text-brand-green-500 fill-brand-green-500' : 'text-brand-gray-300 fill-brand-gray-300'"
+                :class="
+                  i <= sitter.rating
+                    ? 'text-brand-green-500 fill-brand-green-500'
+                    : 'text-brand-gray-300 fill-brand-gray-300'
+                "
               />
             </div>
 
@@ -527,11 +572,18 @@ const displayGallery = computed(() => {
               </Button>
 
               <Button
+                v-if="!isOwnProfile"
                 @click="handleBookNow"
                 variant="primary"
                 class="rounded-full w-1/2 cursor-pointer"
               >
                 Book Now
+              </Button>
+              <Button v-else 
+              variant="primary"
+              :disabled="true"
+              class="rounded-full w-1/2">
+                Your Profile
               </Button>
             </div>
           </div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { X, MapPin, SquarePen } from 'lucide-vue-next'
+import { X, SquarePen } from 'lucide-vue-next'
 import Badge from '../ui/Badge.vue'
 
 interface Booking {
@@ -101,10 +101,6 @@ const formatTime = (timeStr: string) => {
             <p class="body-3 text-brand-gray-500 font-bold uppercase tracking-wider">Pet Sitter:</p>
             <h4 class="headline-3 text-brand-gray-700">{{ booking.sitterName }}</h4>
           </div>
-          <button class="flex items-center gap-2 text-brand-orange-500 font-bold hover:text-brand-orange-600 transition cursor-pointer">
-            <MapPin class="w-4 h-4" />
-            <span class="body-3">View Map</span>
-          </button>
         </div>
 
         <!-- Date & Time -->

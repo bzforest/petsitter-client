@@ -191,7 +191,7 @@ async function onRoleConfirmed(role: "USER" | "SITTER") {
             />
             <button
               type="button"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
               @click="showPassword = !showPassword"
               :aria-label="showPassword ? 'Hide password' : 'Show password'"
             >
@@ -276,7 +276,7 @@ async function onRoleConfirmed(role: "USER" | "SITTER") {
 
           <button
             type="button"
-            class="body-2 font-semibold text-brand-orange-700 hover:text-brand-orange-900 transition-colors"
+            class="body-2 font-semibold cursor-pointer text-brand-orange-700 hover:text-brand-orange-900 transition-colors"
           >
             Forget Password?
           </button>
@@ -286,7 +286,7 @@ async function onRoleConfirmed(role: "USER" | "SITTER") {
         <button
           type="submit"
           :disabled="isLoading"
-          class="w-full py-3.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-full transition-colors text-sm mt-2 flex items-center justify-center gap-2"
+          class="w-full py-3.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-full transition-colors text-sm mt-2 flex items-center justify-center gap-2 cursor-pointer"
         >
           <div
             v-if="isLoading"
@@ -308,7 +308,7 @@ async function onRoleConfirmed(role: "USER" | "SITTER") {
         <div class="flex w-full gap-4">
           <button
             type="button"
-            class="flex flex-1 items-center justify-center gap-2 rounded-full bg-gray-100 py-3 px-4 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500"
+            class="flex flex-1 items-center justify-center gap-2 rounded-full bg-gray-100 py-3 px-4 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 cursor-pointer"
           >
             <svg
               class="h-5 w-5 shrink-0"
@@ -327,7 +327,7 @@ async function onRoleConfirmed(role: "USER" | "SITTER") {
             type="button"
             @click="handleGoogleLogin"
             :disabled="isGoogleLoading || isLoading"
-            class="flex flex-1 items-center justify-center gap-2 rounded-full bg-gray-100 py-3 px-4 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-200 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500"
+            class="flex flex-1 items-center justify-center gap-2 rounded-full bg-gray-100 py-3 px-4 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-200 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 cursor-pointer"
           >
             <svg
               v-if="!isGoogleLoading"

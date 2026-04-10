@@ -97,7 +97,7 @@ const handleMessage = () => {
             <button 
               v-if="status === 'waiting' && canChange" 
               @click.stop="emit('open-change')"
-              class="flex items-center gap-1 text-brand-orange-700 hover:text-brand-orange-500 transition-colors shrink-0 cursor-pointer"
+              class="hidden lg:flex items-center gap-1 text-brand-orange-700 hover:text-brand-orange-500 transition-colors shrink-0 cursor-pointer"
             >
               <SquarePen class="w-4 h-4" />
               <span class="body-3 font-bold">Change</span>
@@ -127,9 +127,11 @@ const handleMessage = () => {
       
       <div class="flex flex-row items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
         <Button @click.stop="handleMessage" variant="primary" class="flex-1 md:flex-none cursor-pointer">Send Message</Button>
-        <Button @click.stop variant="icon" class="shrink-0 cursor-pointer">
-          <Phone class="w-5 h-5" />
-        </Button>
+        <div class="hidden lg:block">
+          <Button @click.stop variant="icon" class="shrink-0 cursor-pointer">
+            <Phone class="w-5 h-5" />
+          </Button>
+        </div>
       </div>
     </div>
 
@@ -156,9 +158,11 @@ const handleMessage = () => {
           {{ isReviewed ? 'Your Review' : 'Review' }}
         </Button>
 
-        <Button @click.stop variant="icon" class="shrink-0">
-          <Phone class="w-5 h-5 cursor-pointer" />
-        </Button>
+        <div class="hidden lg:block">
+          <Button @click.stop variant="icon" class="shrink-0">
+            <Phone class="w-5 h-5 cursor-pointer" />
+          </Button>
+        </div>
       </div>
     </div>
   

@@ -391,7 +391,7 @@ const scrollToTop = () => {
          <div class="flex gap-4 p-1 w-full justify-center xl:w-auto xl:mr-2">
             <button 
               @click="viewMode = 'list'"
-              class="flex-1 xl:flex-none px-6 xl:px-10 py-3 xl:py-2.5 rounded-xl flex items-center justify-center gap-2 font-bold transition-all duration-300 border-2"
+              class="flex-1 xl:flex-none px-6 xl:px-10 py-3 xl:py-2.5 rounded-xl flex items-center justify-center gap-2 font-bold transition-all duration-300 border-2 cursor-pointer"
               :class="viewMode === 'list' 
                 ? 'border-brand-orange-500 text-brand-orange-500 bg-white shadow-sm' 
                 : 'border-brand-gray-300 text-brand-gray-300 hover:border-brand-gray-400 hover:text-brand-gray-400 bg-white'"
@@ -400,7 +400,7 @@ const scrollToTop = () => {
             </button>
             <button 
               @click="viewMode = 'map'"
-              class="flex-1 xl:flex-none px-6 xl:px-10 py-3 xl:py-2.5 rounded-xl flex items-center justify-center gap-2 font-bold transition-all duration-300 border-2"
+              class="flex-1 xl:flex-none px-6 xl:px-10 py-3 xl:py-2.5 rounded-xl flex items-center justify-center gap-2 font-bold transition-all duration-300 border-2 cursor-pointer"
               :class="viewMode === 'map' 
                 ? 'border-brand-orange-500 text-brand-orange-500 bg-white shadow-sm' 
                 : 'border-brand-gray-300 text-brand-gray-300 hover:border-brand-gray-400 hover:text-brand-gray-400 bg-white'"
@@ -431,16 +431,16 @@ const scrollToTop = () => {
 
             <!-- Zoom Controls -->
             <div class="absolute top-6 right-6 z-400 flex flex-col bg-white rounded-xl shadow-md border border-brand-gray-100 overflow-hidden divide-y divide-brand-gray-100">
-              <button @click="zoomIn" class="w-10 h-10 flex items-center justify-center text-brand-gray-500 hover:text-brand-gray-900 hover:bg-brand-gray-50 transition active:bg-brand-gray-100">
+              <button @click="zoomIn" class="w-10 h-10 flex items-center justify-center text-brand-gray-500 hover:text-brand-gray-900 hover:bg-brand-gray-50 transition active:bg-brand-gray-100 cursor-pointer">
                 <Plus :size="20" />
               </button>
-              <button @click="zoomOut" class="w-10 h-10 flex items-center justify-center text-brand-gray-500 hover:text-brand-gray-900 hover:bg-brand-gray-50 transition active:bg-brand-gray-100">
+              <button @click="zoomOut" class="w-10 h-10 flex items-center justify-center text-brand-gray-500 hover:text-brand-gray-900 hover:bg-brand-gray-50 transition active:bg-brand-gray-100 cursor-pointer">
                 <Minus :size="20" />
               </button>
             </div>
 
             <!-- User Location Center Button -->
-            <button @click="getUserLocation" class="absolute top-32 right-6 z-400 w-10 h-10 bg-white rounded-xl shadow-md border border-brand-gray-100 flex items-center justify-center text-brand-gray-500 hover:text-blue-500 transition active:bg-brand-gray-50">
+            <button @click="getUserLocation" class="absolute top-32 right-6 z-400 w-10 h-10 bg-white rounded-xl shadow-md border border-brand-gray-100 flex items-center justify-center text-brand-gray-500 hover:text-blue-500 transition active:bg-brand-gray-50 cursor-pointer">
               <Navigation :size="20" />
             </button>
 

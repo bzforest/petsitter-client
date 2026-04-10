@@ -135,7 +135,7 @@ const handleUpdateProfile = async () => {
       </div>
   
       <div class="flex justify-end w-full max-w-[800px] mt-2">
-        <Button variant="primary" @click="handleUpdateProfile">
+        <Button variant="primary" @click="handleUpdateProfile" class="cursor-pointer">
           Update Profile
         </Button>
       </div>
