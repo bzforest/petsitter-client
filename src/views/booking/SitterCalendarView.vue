@@ -8,6 +8,8 @@ import SitterCalendarMonthGrid from "@/components/booking/SitterCalendarMonthGri
 import { getMySitterCalendar, type SitterCalendarItemResponse } from "@/services/sitterCalendar.service";
 import { useToast } from "@/composables/useToast";
 
+defineOptions({ name: "SitterCalendar" });
+
 const router = useRouter();
 const { showToast } = useToast();
 
@@ -88,6 +90,53 @@ const filteredCalendarItems = computed(() => {
   });
 });
 
+const mobileAgendaItems = computed(() => {
+  return [...filteredCalendarItems.value]
+    .sort((a, b) => {
+      const aMs = new Date(`${a.startDate}T${a.startTime}`).getTime();
+      const bMs = new Date(`${b.startDate}T${b.startTime}`).getTime();
+      if (aMs !== bMs) return aMs - bMs;
+      return a.bookingId - b.bookingId;
+    });
+});
+
+const mobileAgendaGroups = computed(() => {
+  const grouped = new Map<string, SitterCalendarItemResponse[]>();
+  for (const item of mobileAgendaItems.value) {
+    const list = grouped.get(item.startDate) ?? [];
+    list.push(item);
+    grouped.set(item.startDate, list);
+  }
+  return Array.from(grouped.entries()).map(([date, items]) => ({ date, items }));
+});
+
+function mobileStatusClass(status: SitterCalendarItemResponse["status"]): string {
+  if (status === "PENDING" || status === "PAID") return "text-brand-pink-500";
+  if (status === "CONFIRMED") return "text-brand-orange-700";
+  if (status === "IN_SERVICE") return "text-brand-blue-500";
+  if (status === "COMPLETED") return "text-brand-green-500";
+  return "text-brand-gray-500";
+}
+
+function statusLabel(status: SitterCalendarItemResponse["status"]): string {
+  if (status === "PENDING" || status === "PAID") return "Waiting for confirm";
+  if (status === "CONFIRMED") return "Waiting for service";
+  if (status === "IN_SERVICE") return "In service";
+  if (status === "COMPLETED") return "Success";
+  return "Unknown";
+}
+
+function mobileDateLabel(dateText: string): string {
+  const dt = new Date(dateText);
+  if (Number.isNaN(dt.getTime())) return dateText;
+  return dt.toLocaleDateString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 async function loadCalendar() {
   try {
     loading.value = true;
@@ -142,7 +191,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="space-y-4 rounded-2xl bg-brand-white p-5 shadow-sm">
+  <section class="space-y-4 rounded-2xl bg-brand-white p-3 shadow-sm sm:p-4 md:p-5">
     <header class="flex flex-wrap items-center justify-between gap-3">
       <h1 class="headline-4 text-brand-gray-900">Calendar</h1>
 
@@ -160,7 +209,7 @@ onMounted(() => {
     </header>
 
     <section class="flex flex-wrap items-center justify-between gap-3">
-      <section class="flex items-center gap-2">
+      <section class="flex w-full flex-wrap items-center gap-2 lg:w-auto">
         <Clock3 class="h-4 w-4 text-brand-gray-300" />
         <section class="mr-1 flex items-center rounded-full border border-brand-gray-100 p-1">
           <button
@@ -208,23 +257,68 @@ onMounted(() => {
         </button>
       </section>
 
-      <SitterCalendarLegend />
+      <section class="w-full lg:w-auto">
+        <SitterCalendarLegend />
+      </section>
     </section>
 
     <article v-if="loading" class="rounded-2xl bg-brand-white p-8 body-3 text-brand-gray-500">
       Loading calendar...
     </article>
-    <SitterCalendarGrid
-      v-else-if="viewMode === 'week'"
-      :days="weekDays"
-      :items="filteredCalendarItems"
-      @select-booking="openBookingDetail"
-    />
-    <SitterCalendarMonthGrid
-      v-else
-      :days="monthDays"
-      :items="filteredCalendarItems"
-      @select-booking="openBookingDetail"
-    />
+    <section class="space-y-3 md:hidden">
+      <article
+        v-if="!loading && mobileAgendaGroups.length === 0"
+        class="rounded-xl border border-brand-gray-100 p-6 text-center body-3 text-brand-gray-500"
+      >
+        No calendar bookings found
+      </article>
+
+      <article
+        v-for="group in mobileAgendaGroups"
+        :key="`mobile-day-${group.date}`"
+        class="rounded-xl border border-brand-gray-100"
+      >
+        <header class="sticky top-0 z-10 rounded-t-xl border-b border-brand-gray-100 bg-brand-gray-50 px-3 py-2">
+          <p class="body-3 text-brand-gray-700">{{ mobileDateLabel(group.date) }}</p>
+        </header>
+        <section class="space-y-2 p-3">
+          <article
+            v-for="item in group.items"
+            :key="`mobile-cal-${item.bookingId}`"
+            class="rounded-lg border border-brand-gray-100 p-2.5"
+          >
+            <header class="flex items-center justify-between gap-3">
+              <p class="body-2 text-brand-gray-900">{{ item.ownerName }}</p>
+              <span class="body-3" :class="mobileStatusClass(item.status)">{{ statusLabel(item.status) }}</span>
+            </header>
+            <p class="body-3 text-brand-gray-600">
+              {{ item.startTime }} - {{ item.endTime }}
+            </p>
+            <button
+              type="button"
+              class="mt-1.5 cursor-pointer body-3 text-brand-orange-700 transition hover:text-brand-orange-500"
+              @click="openBookingDetail(item.bookingId)"
+            >
+              View Detail
+            </button>
+          </article>
+        </section>
+      </article>
+    </section>
+
+    <section class="hidden overflow-x-auto md:block">
+      <SitterCalendarGrid
+        v-if="!loading && viewMode === 'week'"
+        :days="weekDays"
+        :items="filteredCalendarItems"
+        @select-booking="openBookingDetail"
+      />
+      <SitterCalendarMonthGrid
+        v-else-if="!loading"
+        :days="monthDays"
+        :items="filteredCalendarItems"
+        @select-booking="openBookingDetail"
+      />
+    </section>
   </section>
 </template>

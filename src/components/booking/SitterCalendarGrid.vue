@@ -80,7 +80,7 @@ const dayColumns = computed(() => {
 </script>
 
 <template>
-  <section class="overflow-hidden rounded-2xl border border-brand-gray-100 bg-brand-white">
+  <section class="min-w-[780px] overflow-hidden rounded-2xl border border-brand-gray-100 bg-brand-white">
     <section class="grid grid-cols-[90px_repeat(7,minmax(0,1fr))] border-b border-brand-gray-100 bg-brand-gray-50">
       <article class="px-3 py-3 body-3 text-brand-gray-400">Time</article>
       <article
