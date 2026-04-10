@@ -7,6 +7,7 @@ import { X, Home, User } from 'lucide-vue-next'
 import SockJS from 'sockjs-client'
 import { Client } from '@stomp/stompjs'
 import { useRoute , useRouter } from 'vue-router'
+import { supabase } from '@/lib/supabase'
 
 import { useAuthStore } from '@/stores/auth'
 import apiClient from '@/api/axios'
@@ -47,14 +48,16 @@ const fetchInbox = async () => {
     const newChatIdParam = route.query.newChat;
     if (newChatIdParam) {
       const targetId = Number(newChatIdParam);
+      const passedName = route.query.chatName as string;
+      const passedAvatar = route.query.chatAvatar as string;
       const existingChat = chats.value.find(c => c.id === targetId);
 
       // ถ้าคนนี้ยังไม่เคยคุยกัน (ไม่มีใน Inbox) ให้โชว์ชื่อจำลองขึ้นมาบนสุดก่อน
       if (!existingChat) {
         chats.value.unshift({
           id: targetId,
-          name: "Sitter (ID: " + targetId + ")",
-          avatarUrl: `https://ui-avatars.com/api/?name=Sitter+${targetId}&background=F3F4F6&color=374151`,
+          name: passedName || "Sitter (ID: " + targetId + ")",
+          avatarUrl: passedAvatar || `https://ui-avatars.com/api/?name=Sitter+${targetId}&background=F3F4F6&color=374151`,
           lastMessage: "Start messaging...",
           unreadCount: 0
         });
@@ -98,15 +101,42 @@ const selectChat = async (id: number) => {
   }
 }
 
+//  ทำหน้าที่รับจบทั้งอัปโหลดรูปและส่งข้อความ
+const handleChatSubmit = async (text: string, file: File | null) => {
+  let uploadedImageUrl: string | null = null;
+
+  // 1. ถ้ามีรูปแนบมาด้วย ให้อัปโหลดขึ้น Supabase ก่อน!
+  if (file) {
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`
+      const filePath = `chat/${fileName}`
+
+      const { error } = await supabase.storage.from('chat-images').upload(filePath, file)
+      if (error) throw error
+
+      const { data: urlData } = supabase.storage.from('chat-images').getPublicUrl(filePath)
+      uploadedImageUrl = urlData.publicUrl; // เก็บ URL ที่ได้ไว้ส่งต่อ
+    } catch (error) {
+      console.error("Upload error:", error)
+      alert("อัปโหลดรูปภาพไม่สำเร็จ กรุณาลองใหม่อีกครั้ง")
+      return; // ถ้าอัปโหลดพัง ให้หยุดการส่งข้อความเลย
+    }
+  }
+
+  // 2. ส่งข้อความ (และ/หรือ) URL รูปภาพ เข้าสู่ระบบแชทปกติ
+  await sendMessage(text, uploadedImageUrl);
+}
+
 // Actions: เมื่อกดส่งข้อความ
-const sendMessage = async (text: string) => {
-  if (!text.trim() || !activeChatId.value) return
+const sendMessage = async (text: string | null = null, imageUrl: string | null = null) => {
+  if (!activeChatId.value || (!text?.trim() && !imageUrl)) return
 
   const payload = {
     sender_id: authStore.userId,
     receiver_id: activeChatId.value,
-    content: text.trim(),
-    image_url: null
+    content: text?.trim() || '', // ถ้าส่งแค่รูป content จะเป็นช่องว่าง
+    image_url: imageUrl // URL ที่ได้จาก Supabase
   }
 
   // เทคนิค Optimistic UI: เอาข้อความมาแปะโชว์ที่หน้าจอเราก่อนเลย ให้ดูเหมือนส่งเร็วปรู๊ดปร๊าด
@@ -114,10 +144,13 @@ const sendMessage = async (text: string) => {
     id: Date.now(),
     sender_id: authStore.userId,
     receiver_id: activeChatId.value,
-    content: text.trim(),
+    content: text?.trim() || '',
+    image_url: imageUrl,
+    created_at: new Date().toISOString()
   }
+
   activeMessages.value.push(tempMsg)
-  currentInput.value = ''
+  currentInput.value = '' // ล้างช่องพิมพ์
   scrollToBottom()
 
   // ยิง API ไปเซฟลง Database เบื้องหลัง
@@ -128,10 +161,6 @@ const sendMessage = async (text: string) => {
     alert("ส่งข้อความไม่สำเร็จ")
   }
   // TODO: ทำให้ Scroll เด้งลงล่างสุด (เดี๋ยวมาทำทีหลัง)
-}
-
-const handleAttach = () => {
-  alert("ฟีเจอร์แนบรูปจะมาในเฟสถัดไปครับ!")
 }
 
 let stompClient: Client | null = null;
@@ -269,9 +298,7 @@ const scrollToBottom = async () => {
           <div class="shrink-0 w-full bg-white pb-4 px-4">
             <ChatInput
               v-model="currentInput"
-              @send="sendMessage"
-              @attach="handleAttach"
-            />
+              @send="handleChatSubmit"  />
           </div>
   
         </div>

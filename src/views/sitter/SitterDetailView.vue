@@ -207,14 +207,18 @@ const handleBookNow = () => {
 };
 
 const handleMessage = () => {
-  //  ดึง ID ของ Sitter คนนี้ออกมา 
   const targetUserId = sitter.value?.userId || sitter.value?.id; 
-  
+
   if (targetUserId) {
-    // สั่งเปลี่ยนหน้าต่างไปที่ /chat พร้อมแนบ Query ?newChat=เลขไอดี
-    router.push({ path: '/chat', query: { newChat: targetUserId } });
-  } else {
-    alert("ไม่พบ ID ของ Sitter คนนี้ครับ");
+    // แนบ chatName และ chatAvatar ใส่ท้าย URL ไปด้วยเลย
+    router.push({ 
+      path: '/chat', 
+      query: { 
+        newChat: targetUserId,
+        chatName: sitter.value?.title || sitter.value?.owner, // ปรับชื่อตัวแปรให้ตรงกับข้อมูลจริงที่มี
+        chatAvatar: sitter.value?.profileImage || '' // หิ้ว URL รูปโปรไฟล์ไปด้วย
+      } 
+    });
   }
 };
 
