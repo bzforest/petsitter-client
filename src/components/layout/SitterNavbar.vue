@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { MessagesSquare, UserRound } from "lucide-vue-next";
+import { computed, onMounted, onUnmounted, ref } from "vue";
+import { useRouter } from "vue-router";
+import { Menu, MessagesSquare, UserRound } from "lucide-vue-next";
 import { useAuthStore } from "@/stores/auth";
-import { getProfile } from "@/services/sitter.service";
+import { getProfileWithCache } from "@/services/sitter.service";
 
 const SITTER_PROFILE_UPDATED = "petsitter-sitter-profile-updated";
 
-const route = useRoute();
 const auth = useAuthStore();
 const router = useRouter()
+const emit = defineEmits<{
+  toggleMenu: [];
+}>();
 
 // Sitter Navbar state
 const sitterFullName = ref("");
@@ -24,7 +26,7 @@ const sitterDisplayName = computed(() => {
 
 async function loadSitterNavProfile() {
   try {
-    const { data } = await getProfile();
+    const { data } = await getProfileWithCache();
     sitterFullName.value = typeof data?.fullName === "string" ? data.fullName : "";
     sitterAvatarUrl.value =
       typeof data?.profileImage === "string" && data.profileImage ? data.profileImage : null;
@@ -47,13 +49,6 @@ onUnmounted(() => {
   window.removeEventListener(SITTER_PROFILE_UPDATED, onSitterProfileUpdatedEvent);
 });
 
-watch(
-  () => route.path,
-  () => {
-    void loadSitterNavProfile();
-  }
-);
-
 function onChatPlaceholderClick() {
   router.push('/chat');
 }
@@ -61,12 +56,21 @@ function onChatPlaceholderClick() {
 
 <template>
   <nav
-    class="sticky top-0 z-50 flex h-16 w-full shrink-0 items-center justify-between border-b border-brand-gray-100 bg-brand-white px-16"
+    class="sticky top-0 z-50 flex h-16 w-full shrink-0 items-center justify-between border-b border-brand-gray-100 bg-brand-white px-4 sm:px-6 md:px-10 lg:px-16"
     aria-label="Sitter top navigation"
   >
+    <button
+      type="button"
+      class="mr-2 flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-brand-gray-50 text-brand-gray-700 transition hover:bg-brand-gray-100 md:hidden"
+      aria-label="Open menu"
+      @click="emit('toggleMenu')"
+    >
+      <Menu class="h-5 w-5" stroke-width="2" aria-hidden="true" />
+    </button>
+
     <RouterLink
       to="/sitterprofile/profile"
-      class="flex min-w-0 max-w-[calc(100%-4rem)] items-center gap-2 no-underline"
+      class="flex min-w-0 flex-1 items-center gap-2 no-underline"
     >
       <span
         class="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full border border-brand-gray-100 bg-brand-gray-50"
@@ -86,7 +90,7 @@ function onChatPlaceholderClick() {
         </span>
       </span>
 
-      <span class="body-1 truncate font-medium text-brand-gray-900">
+      <span class="body-1 hidden truncate font-medium text-brand-gray-900 sm:block">
         {{ sitterDisplayName }}
       </span>
     </RouterLink>

@@ -1,20 +1,26 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onActivated, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { getSitterBookings, type BookingResponse, type BookingStatusApi } from "@/services/booking.service";
-import { getOwnerProfileByUserId } from "@/services/userProfile.service";
+import {
+  getSitterBookingsListSnapshot,
+  getSitterBookingsPageWithCache,
+  type BookingResponse,
+  type BookingStatusApi,
+} from "@/services/booking.service";
 import { useToast } from "@/composables/useToast";
+
+defineOptions({ name: "SitterBookingList" });
 
 const router = useRouter();
 const { showToast } = useToast();
 
 const loading = ref(false);
 const bookings = ref<BookingResponse[]>([]);
-const ownerNameByUserId = ref<Record<number, string>>({});
 const pageSize = 10;
 const currentPage = ref(0);
 const totalPages = ref(1);
 const totalElements = ref(0);
+const listPrimed = ref(false);
 
 function labelFromStatus(status: BookingStatusApi) {
   if (status === "CONFIRMED") return "Waiting for service";
@@ -47,7 +53,7 @@ const rows = computed(() =>
     })
     .map((b) => ({
       ...b,
-      ownerName: ownerNameByUserId.value[b.userId] || `User #${b.userId}`,
+      ownerName: b.ownerName?.trim() || `User #${b.userId}`,
       schedule: `${b.startDate} ${b.startTime} - ${b.endTime}`,
       petsCount: b.petIds.length,
       transactionNo: b.id,
@@ -59,37 +65,32 @@ const rows = computed(() =>
     }))
 );
 
-async function loadOwnerNames(items: BookingResponse[]) {
-  const uniqueUserIds = Array.from(new Set(items.map((item) => item.userId)));
-  if (uniqueUserIds.length === 0) return;
-
-  await Promise.all(
-    uniqueUserIds.map(async (userId) => {
-      // Keep cached names to avoid duplicate requests between page switches.
-      if (ownerNameByUserId.value[userId]) return;
-      try {
-        const { data } = await getOwnerProfileByUserId(userId);
-        const name = data.fullName?.trim() || data.email?.trim() || `User #${userId}`;
-        ownerNameByUserId.value[userId] = name;
-      } catch {
-        ownerNameByUserId.value[userId] = `User #${userId}`;
-      }
-    })
-  );
-}
-
 const pageStart = computed(() => (totalElements.value === 0 ? 0 : currentPage.value * pageSize + 1));
 const pageEnd = computed(() => Math.min((currentPage.value + 1) * pageSize, totalElements.value));
 
+function applyBookingsPage(res: {
+  content: BookingResponse[];
+  number: number;
+  totalPages: number;
+  totalElements: number;
+}) {
+  bookings.value = res.content;
+  currentPage.value = res.number;
+  totalPages.value = Math.max(1, res.totalPages);
+  totalElements.value = res.totalElements;
+}
+
 async function loadBookings(page = currentPage.value) {
-  try {
+  const snap = getSitterBookingsListSnapshot(page, pageSize);
+  if (snap) {
+    applyBookingsPage(snap);
+    loading.value = false;
+  } else {
     loading.value = true;
-    const res = await getSitterBookings(page, pageSize);
-    bookings.value = res.content;
-    currentPage.value = res.number;
-    totalPages.value = Math.max(1, res.totalPages);
-    totalElements.value = res.totalElements;
-    await loadOwnerNames(res.content);
+  }
+  try {
+    const res = await getSitterBookingsPageWithCache(page, pageSize, !!snap);
+    applyBookingsPage(res);
   } catch {
     showToast("Failed to load booking list", "error");
   } finally {
@@ -106,7 +107,13 @@ function goToPage(page: number) {
   void loadBookings(page);
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await loadBookings();
+  listPrimed.value = true;
+});
+
+onActivated(() => {
+  if (!listPrimed.value) return;
   void loadBookings();
 });
 </script>
@@ -118,16 +125,53 @@ onMounted(() => {
     </header>
 
     <article class="overflow-hidden rounded-2xl border border-brand-gray-100 bg-brand-white">
-      <table class="w-full border-collapse">
+      <!-- Mobile card list (no horizontal scroll) -->
+      <section class="space-y-3 p-3 md:hidden">
+        <article v-if="loading" class="rounded-xl border border-brand-gray-100 px-4 py-6 text-center body-3 text-brand-gray-500">
+          Loading...
+        </article>
+        <article v-else-if="rows.length === 0" class="rounded-xl border border-brand-gray-100 px-4 py-6 text-center body-3 text-brand-gray-500">
+          No booking found
+        </article>
+        <article
+          v-for="row in rows"
+          :key="`mobile-${row.id}`"
+          class="space-y-2 rounded-xl border border-brand-gray-100 p-3"
+        >
+          <header class="flex items-start justify-between gap-3">
+            <p class="body-2 text-brand-gray-900">{{ row.ownerName }}</p>
+            <span class="body-3" :class="classFromStatus(row.status)">{{ labelFromStatus(row.status) }}</span>
+          </header>
+          <p class="body-3 text-brand-gray-600">{{ row.schedule }}</p>
+          <section class="flex items-center justify-between">
+            <p class="body-3 text-brand-gray-500">Pet(s): {{ row.petsCount }}</p>
+            <p class="body-3 text-brand-gray-500">#{{ row.transactionNo }}</p>
+          </section>
+          <section class="flex items-center justify-between">
+            <p class="body-3 text-brand-gray-500">Transaction: {{ row.transactionDate }}</p>
+            <button
+              type="button"
+              class="cursor-pointer body-3 text-brand-orange-700 transition hover:text-brand-orange-500"
+              @click="openDetail(row.id)"
+            >
+              View Detail
+            </button>
+          </section>
+        </article>
+      </section>
+
+      <!-- Desktop table -->
+      <section class="hidden overflow-x-auto md:block">
+        <table class="w-full min-w-[920px] border-collapse">
         <thead class="bg-brand-black text-brand-white">
           <tr class="body-3">
-            <th class="px-4 py-3 text-left">Pet Owner Name</th>
-            <th class="px-4 py-3 text-left">Pet(s)</th>
-            <th class="px-4 py-3 text-left">Booking Date</th>
-            <th class="px-4 py-3 text-left">Transaction Date</th>
-            <th class="px-4 py-3 text-left">Transaction No.</th>
-            <th class="px-4 py-3 text-left">Status</th>
-            <th class="px-4 py-3 text-left"></th>
+            <th class="px-3 py-3 text-left md:px-4">Pet Owner Name</th>
+            <th class="px-3 py-3 text-left md:px-4">Pet(s)</th>
+            <th class="px-3 py-3 text-left md:px-4">Booking Date</th>
+            <th class="px-3 py-3 text-left md:px-4">Transaction Date</th>
+            <th class="px-3 py-3 text-left md:px-4">Transaction No.</th>
+            <th class="px-3 py-3 text-left md:px-4">Status</th>
+            <th class="px-3 py-3 text-left md:px-4"></th>
           </tr>
         </thead>
         <tbody>
@@ -142,15 +186,15 @@ onMounted(() => {
             :key="row.id"
             class="border-t border-brand-gray-100 body-3 text-brand-gray-700"
           >
-            <td class="px-4 py-3">{{ row.ownerName }}</td>
-            <td class="px-4 py-3">{{ row.petsCount }}</td>
-            <td class="px-4 py-3">{{ row.schedule }}</td>
-            <td class="px-4 py-3">{{ row.transactionDate }}</td>
-            <td class="px-4 py-3">#{{ row.transactionNo }}</td>
-            <td class="px-4 py-3">
+            <td class="px-3 py-3 md:px-4">{{ row.ownerName }}</td>
+            <td class="px-3 py-3 md:px-4">{{ row.petsCount }}</td>
+            <td class="px-3 py-3 md:px-4">{{ row.schedule }}</td>
+            <td class="px-3 py-3 md:px-4">{{ row.transactionDate }}</td>
+            <td class="px-3 py-3 md:px-4">#{{ row.transactionNo }}</td>
+            <td class="px-3 py-3 md:px-4">
               <span :class="classFromStatus(row.status)">{{ labelFromStatus(row.status) }}</span>
             </td>
-            <td class="px-4 py-3">
+            <td class="px-3 py-3 md:px-4">
               <button
                 type="button"
                 class="cursor-pointer text-brand-orange-700 transition hover:text-brand-orange-500"
@@ -161,11 +205,12 @@ onMounted(() => {
             </td>
           </tr>
         </tbody>
-      </table>
+        </table>
+      </section>
 
       <footer
         v-if="!loading && totalElements > 0"
-        class="flex items-center justify-between border-t border-brand-gray-100 px-4 py-3"
+        class="flex flex-col items-start justify-between gap-2 border-t border-brand-gray-100 px-4 py-3 sm:flex-row sm:items-center"
       >
         <p class="body-3 text-brand-gray-500">
           Showing {{ pageStart }}-{{ pageEnd }} of {{ totalElements }}

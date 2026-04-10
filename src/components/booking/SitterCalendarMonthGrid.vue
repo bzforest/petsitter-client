@@ -47,7 +47,7 @@ const dayItemMap = computed(() => {
 </script>
 
 <template>
-  <section class="overflow-hidden rounded-2xl border border-brand-gray-100 bg-brand-white">
+  <section class="min-w-[760px] overflow-hidden rounded-2xl border border-brand-gray-100 bg-brand-white">
     <section class="grid grid-cols-7 border-b border-brand-gray-100 bg-brand-gray-50">
       <article
         v-for="day in days.slice(0, 7)"

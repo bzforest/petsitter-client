@@ -251,14 +251,14 @@ const displayGallery = computed(() => {
     </div>
 
     <!-- Main Content -->
-    <main v-else-if="sitter" class="flex-1 pb-20">
+    <main v-else-if="sitter" class="flex-1 pb-12 md:pb-20">
       <!-- Top Gallery Header (3 slots with fallback) -->
-      <div class="w-full flex h-[350px] overflow-hidden mb-12">
+      <div class="mb-6 grid h-auto w-full grid-cols-1 overflow-hidden sm:mb-8 sm:grid-cols-3 sm:h-[280px] md:mb-12 md:h-[350px]">
         <div
           v-for="(img, idx) in displayGallery"
           :key="idx"
-          class="w-1/3"
-          :class="{ 'border-r-4 border-[#FAFAFA]': idx < 2 }"
+          class="h-44 sm:h-auto"
+          :class="{ 'sm:border-r-4 sm:border-[#FAFAFA]': idx < 2 }"
         >
           <img
             :src="img"
@@ -268,14 +268,12 @@ const displayGallery = computed(() => {
         </div>
       </div>
 
-      <div
-        class="container mx-auto px-4 flex flex-col lg:flex-row gap-10 max-w-7xl"
-      >
+      <div class="container mx-auto flex max-w-7xl flex-col gap-6 px-4 sm:gap-8 md:gap-10 lg:flex-row">
         <!-- Left Column: Details -->
-        <div class="lg:w-2/3 flex flex-col gap-10">
+        <div class="flex flex-col gap-6 sm:gap-8 md:gap-10 lg:w-2/3">
           <!-- Title -->
           <div>
-            <h1 class="headline-1 mb-2">{{ sitter.title }}</h1>
+            <h1 class="headline-1 mb-2 wrap-break-word">{{ sitter.title }}</h1>
           </div>
 
           <!-- Introduction -->
@@ -305,18 +303,18 @@ const displayGallery = computed(() => {
 
             <!-- Map will be rendered here -->
             <div
-              class="w-full h-62.5 bg-gray-200 rounded-2xl overflow-hidden relative shadow-sm"
+              class="relative h-56 w-full overflow-hidden rounded-2xl bg-gray-200 shadow-sm sm:h-64 md:h-72"
               id="map"
-            ></div>
+            />
           </section>
 
           <!-- Right Column: Sticky Booking Card Mobile-->
-          <div class="lg:w-1/3 relative md:hidden">
+          <div class="relative lg:hidden">
             <div
-              class="sticky top-20 bg-white rounded-2xl shadow-lg border border-gray-100 gap-2 p-8 flex flex-col items-center text-center"
+              class="flex flex-col items-center gap-2 rounded-2xl border border-gray-100 bg-white p-5 text-center shadow-lg sm:p-6"
             >
               <!-- Avatar -->
-              <div class="w-40 h-40 rounded-full overflow-hidden mb-4">
+              <div class="mb-4 h-28 w-28 overflow-hidden rounded-full sm:h-32 sm:w-32">
                 <img
                   :src="
                     sitter.profileImage ||
@@ -327,11 +325,11 @@ const displayGallery = computed(() => {
                 />
               </div>
 
-              <h2 class="headline-2">
+              <h2 class="headline-2 wrap-break-word">
                 {{ sitter.title }}
               </h2>
-              <div class="flex items-center gap-2 mt-1">
-                <span class="headline-4">{{ sitter.owner }}</span>
+              <div class="mt-1 flex flex-wrap items-center justify-center gap-2">
+                <span class="headline-4 wrap-break-word">{{ sitter.owner }}</span>
                 <span class="body-2 text-brand-green-500">{{
                   sitter.experience
                 }}</span>
@@ -362,11 +360,11 @@ const displayGallery = computed(() => {
               </div>
 
               <!-- Action Buttons -->
-              <div class="flex w-full gap-3 mt-8">
+              <div class="mt-6 flex w-full flex-col gap-3 sm:mt-8 sm:flex-row">
                 <Button
                   @click="handleMessage"
                   variant="secondary"
-                  class="rounded-full w-1/2 cursor-pointer"
+                  class="w-full cursor-pointer rounded-full sm:w-1/2"
                 >
                   <template #left-icon>
                     <MessageSquare :size="20" />
@@ -377,7 +375,7 @@ const displayGallery = computed(() => {
                 <Button
                   @click="handleBookNow"
                   variant="primary"
-                  class="rounded-full w-1/2 cursor-pointer"
+                  class="w-full cursor-pointer rounded-full sm:w-1/2"
                 >
                   Book Now
                 </Button>
@@ -386,18 +384,18 @@ const displayGallery = computed(() => {
           </div>
 
           <!-- Rating & Reviews -->
-          <section id="reviews-section" class="bg-brand-gray-50 rounded-3xl p-8 shadow-sm border border-gray-100 mb-10">
-            <div class="flex flex-col bg-white md:flex-row gap-10 items-start md:items-center mb-8 p-4 border-b border-brand-gray-50 rounded-tl-full rounded-bl-full rounded-br-2xl">
+          <section id="reviews-section" class="mb-8 rounded-3xl border border-gray-100 bg-brand-gray-50 p-4 shadow-sm sm:mb-10 sm:p-6 md:p-8">
+            <div class="mb-6 flex flex-col items-start gap-6 rounded-2xl border-b border-brand-gray-50 bg-white p-4 sm:mb-8 sm:flex-row sm:items-center sm:gap-10 sm:rounded-tl-full sm:rounded-bl-full sm:rounded-br-2xl">
               <div
-                class="bg-black text-white w-32 h-32 rounded-tr-full rounded-tl-full rounded-bl-full flex flex-col items-center justify-center font-bold shrink-0 shadow-xl"
+                class="flex h-24 w-24 shrink-0 flex-col items-center justify-center rounded-tr-full rounded-tl-full rounded-bl-full bg-black font-bold text-white shadow-xl sm:h-32 sm:w-32"
               >
-                <span class="text-4xl mb-1">{{ sitter.rating.toFixed(1) }}</span>
+                <span class="mb-1 text-3xl sm:text-4xl">{{ sitter.rating.toFixed(1) }}</span>
                 <span class="text-xs text-brand-gray-300 font-normal"
                   >{{ totalReviews }} Reviews</span
                 >
               </div>
               <div class="flex-1">
-                <h3 class="headline-3 mb-6 text-[#111827]">
+                <h3 class="headline-3 mb-4 text-[#111827] sm:mb-6">
                   Rating & Reviews
                 </h3>
                 <div class="flex flex-wrap gap-3">
@@ -406,7 +404,7 @@ const displayGallery = computed(() => {
                     :class="selectedRating === null 
                       ? 'text-brand-orange-500 border-brand-orange-200 bg-brand-orange-50' 
                       : 'text-brand-gray-500 border-brand-gray-200 hover:bg-brand-gray-50'"
-                    class="px-5 py-2 rounded-full text-sm font-bold border transition cursor-pointer"
+                    class="cursor-pointer rounded-full border px-4 py-2 text-sm font-bold transition sm:px-5"
                   >
                     All Reviews
                   </button>
@@ -417,7 +415,7 @@ const displayGallery = computed(() => {
                     :class="selectedRating === star 
                       ? 'text-brand-green-500 border-brand-green-200 bg-brand-green-50' 
                       : 'text-brand-gray-500 border-brand-gray-200 hover:bg-brand-gray-50'"
-                    class="px-5 py-2 rounded-full text-sm font-bold border flex gap-1.5 items-center transition cursor-pointer"
+                    class="flex cursor-pointer items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-bold transition sm:px-5"
                   >
                     {{ star }} <Star class="w-3.5 h-3.5 fill-brand-green-500 text-brand-green-500" />
                   </button>
@@ -453,7 +451,7 @@ const displayGallery = computed(() => {
             </div>
 
             <!-- Pagination (Requirement: 5 per page) -->
-            <div v-if="totalPages > 1" class="mt-10 flex justify-center border-t border-brand-gray-50 pt-8">
+            <div v-if="totalPages > 1" class="mt-8 flex justify-center border-t border-brand-gray-50 pt-6 sm:mt-10 sm:pt-8">
               <PaginationField 
                 :totalPages="totalPages"
                 :currentPage="currentPage"
@@ -465,7 +463,7 @@ const displayGallery = computed(() => {
         </div>
 
         <!-- Right Column: Sticky Booking Card -->
-        <div class="lg:w-1/3 relative md:block hidden">
+        <div class="relative hidden lg:block lg:w-1/3">
           <div
             class="sticky top-20 bg-white rounded-2xl shadow-lg border border-gray-100 gap-2 p-8 flex flex-col items-center text-center"
           >

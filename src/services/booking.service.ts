@@ -40,6 +40,57 @@ export const getSitterBookings = async (page = 0, size = 10) => {
   };
 };
 
+const SITTER_BOOKINGS_LIST_TTL_MS = 60_000;
+const sitterBookingsListCache = new Map<
+  string,
+  {
+    content: BookingResponse[];
+    number: number;
+    totalPages: number;
+    totalElements: number;
+    cachedAt: number;
+  }
+>();
+
+function sitterBookingsListKey(page: number, size: number) {
+  return `${page}_${size}`;
+}
+
+export type SitterBookingsListSnapshot = {
+  content: BookingResponse[];
+  number: number;
+  totalPages: number;
+  totalElements: number;
+  cachedAt: number;
+};
+
+export function getSitterBookingsListSnapshot(page: number, size: number): SitterBookingsListSnapshot | null {
+  return sitterBookingsListCache.get(sitterBookingsListKey(page, size)) ?? null;
+}
+
+export function invalidateSitterBookingsListCache() {
+  sitterBookingsListCache.clear();
+}
+
+/** Cached page fetch; use forceNetwork after a mutation or to bypass TTL. */
+export async function getSitterBookingsPageWithCache(page = 0, size = 10, forceNetwork = false) {
+  const key = sitterBookingsListKey(page, size);
+  const hit = sitterBookingsListCache.get(key);
+  if (!forceNetwork && hit && Date.now() - hit.cachedAt < SITTER_BOOKINGS_LIST_TTL_MS) {
+    return { ...hit, fromCache: true as const };
+  }
+  const res = await getSitterBookings(page, size);
+  const payload = {
+    content: res.content,
+    number: res.number,
+    totalPages: res.totalPages,
+    totalElements: res.totalElements,
+    cachedAt: Date.now(),
+  };
+  sitterBookingsListCache.set(key, payload);
+  return { ...payload, fromCache: false as const };
+}
+
 export const getBookingsBySitterId = async (sitterUserId: number) => {
   const { data } = await apiClient.get<ApiPage<BookingResponse>>(`/api/bookings/admin/sitter/${sitterUserId}?page=0&size=100`);
   return data.content ?? [];

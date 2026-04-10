@@ -9,6 +9,7 @@ import {
   completeBookingBySitter,
   confirmBookingBySitter,
   getBookingById,
+  invalidateSitterBookingsListCache,
   rejectBookingBySitter,
   startInServiceBySitter,
   type BookingResponse,
@@ -99,41 +100,66 @@ const transactionDateLabel = computed(() => {
 
 const ownerDisplayName = computed(() => {
   if (!booking.value) return "-";
-  return ownerProfile.value?.fullName?.trim()
-    || ownerProfile.value?.email?.trim()
-    || `User #${booking.value.userId}`;
+  const b = booking.value;
+  const prof = ownerProfile.value;
+  const fromProfileName = prof?.fullName?.trim();
+  if (fromProfileName) return fromProfileName;
+  const fromProfileEmail = prof?.email?.trim();
+  if (fromProfileEmail && fromProfileEmail !== "-") return fromProfileEmail;
+  const fromBooking = b.ownerName?.trim();
+  if (fromBooking) return fromBooking;
+  return `User #${b.userId}`;
 });
+
+function applyOwnerProfileFromApi(data: {
+  fullName: string | null;
+  email: string | null;
+  phone: string | null;
+  profileImage: string | null;
+  idNumber: string | null;
+  dateOfBirth: string | null;
+}) {
+  ownerProfile.value = {
+    fullName: data.fullName || "",
+    email: data.email || "-",
+    phone: data.phone || "-",
+    profileImage: data.profileImage || null,
+    idNumber: data.idNumber || "-",
+    dateOfBirth: data.dateOfBirth || "-",
+  };
+}
+
+function applyOwnerProfileFallback() {
+  const b = booking.value;
+  ownerProfile.value = {
+    fullName: b?.ownerName?.trim() || "",
+    email: "-",
+    phone: "-",
+    profileImage: null,
+    idNumber: "-",
+    dateOfBirth: "-",
+  };
+}
 
 async function loadDetail() {
   try {
     loading.value = true;
+    ownerProfile.value = null;
     const { data } = await getBookingById(bookingId.value);
     booking.value = data;
 
-    // Load pet cards in detail section and modal data.
-    const petRes = await getPetsByUserId(data.userId);
     const selectedPetIds = data.petIds;
+    const [petRes, ownerRes] = await Promise.all([
+      getPetsByUserId(data.userId),
+      getOwnerProfileByUserId(data.userId).catch(() => null),
+    ]);
+
     pets.value = petRes.data.filter((p) => selectedPetIds.includes(p.id));
 
-    try {
-      const ownerRes = await getOwnerProfileByUserId(data.userId);
-      ownerProfile.value = {
-        fullName: ownerRes.data.fullName || "",
-        email: ownerRes.data.email || "-",
-        phone: ownerRes.data.phone || "-",
-        profileImage: ownerRes.data.profileImage || null,
-        idNumber: ownerRes.data.idNumber || "-",
-        dateOfBirth: ownerRes.data.dateOfBirth || "-",
-      };
-    } catch {
-      ownerProfile.value = {
-        fullName: "",
-        email: "-",
-        phone: "-",
-        profileImage: null,
-        idNumber: "-",
-        dateOfBirth: "-",
-      };
+    if (ownerRes) {
+      applyOwnerProfileFromApi(ownerRes.data);
+    } else {
+      applyOwnerProfileFallback();
     }
   } catch {
     showToast("Failed to load booking detail", "error");
@@ -165,6 +191,7 @@ async function rejectBooking() {
   try {
     actionLoading.value = true;
     await rejectBookingBySitter(bookingId.value);
+    invalidateSitterBookingsListCache();
     showToast("Booking declined", "success");
     showRejectModal.value = false;
     await loadDetail();
@@ -179,6 +206,7 @@ async function startInService() {
   try {
     actionLoading.value = true;
     await startInServiceBySitter(bookingId.value);
+    invalidateSitterBookingsListCache();
     showToast("You are now in service", "success");
     await loadDetail();
   } catch (error) {
@@ -192,6 +220,7 @@ async function completeBooking() {
   try {
     actionLoading.value = true;
     await completeBookingBySitter(bookingId.value);
+    invalidateSitterBookingsListCache();
     showToast("Booking marked as success", "success");
     await loadDetail();
   } catch (error) {
@@ -223,7 +252,10 @@ onMounted(() => {
       <span class="text-brand-gray-900">Booking detail</span>
     </nav>
 
-    <header class="flex flex-wrap items-center justify-between gap-3">
+    <header
+      v-if="!loading && booking"
+      class="flex flex-wrap items-center justify-between gap-3"
+    >
       <div class="flex flex-wrap items-center gap-3">
         <RouterLink
           :to="{ name: 'sitter-booking-list' }"
@@ -295,8 +327,16 @@ onMounted(() => {
       </div>
     </header>
 
-    <article v-if="loading" class="rounded-2xl bg-brand-white p-6 body-3 text-brand-gray-500">
-      Loading booking detail...
+    <article
+      v-if="loading"
+      class="rounded-2xl bg-brand-white p-8 shadow-sm"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <div class="flex items-center justify-center gap-3">
+        <div class="h-6 w-6 animate-spin rounded-full border-2 border-brand-orange-700 border-t-transparent"></div>
+        <p class="body-2 text-brand-gray-500">Loading booking detail...</p>
+      </div>
     </article>
 
     <article v-else-if="booking" class="space-y-6 rounded-2xl bg-brand-white p-6 shadow-sm">
