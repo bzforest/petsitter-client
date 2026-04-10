@@ -90,6 +90,26 @@ export const useAuthStore = defineStore('auth', () => {
   const role = ref<Role | null>(stored.role)
   const userId = ref<number | null>(stored.userId)
 
+  /** ล้าง Pinia + localStorage แบบ sync — ใช้ร่วมกับ logout และกรณี token หมดอายุตอน init */
+  function clearLocalAuthState() {
+    token.value = null
+    email.value = null
+    role.value = null
+    userId.value = null
+    localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem('token')
+  }
+
+  async function logout() {
+    clearLocalAuthState()
+    await supabase.auth.signOut()
+  }
+
+  // เปิดแอป/รีเฟรชแล้ว token ใน storage หมดอายุแล้ว → ล้างทันที (เส้นทางเดียวกับ logout)
+  if (stored.token && isTokenExpired(stored.token)) {
+    void logout()
+  }
+
   function persist() {
     const state: AuthState = {
       token: token.value,
@@ -162,17 +182,6 @@ export const useAuthStore = defineStore('auth', () => {
     if (!parsed) throw new Error('Invalid google login response')
     setAuth(parsed)
     return parsed
-  }
-
-  async function logout() {
-    token.value = null
-    email.value = null
-    role.value = null
-    userId.value = null
-    localStorage.removeItem(STORAGE_KEY)
-    localStorage.removeItem('token')
-    // Sign out จาก Supabase ด้วย เพื่อล้าง sb-...-auth-token ออกจาก localStorage
-    await supabase.auth.signOut()
   }
 
   // Getters
