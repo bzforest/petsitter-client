@@ -1,1 +1,129 @@
 @import "tailwindcss";
+
+@theme {
+  /* กำหนดฟอนต์หลักของโปรเจกต์ */
+  --font-sans: 'Satoshi', sans-serif;
+
+  /* --- Primary Colors: Brand Orange --- */
+  --color-brand-orange-900: #E44A0C;
+  --color-brand-orange-700: #FF7037;
+  --color-brand-orange-500: #FF986F;
+  --color-brand-orange-300: #FFB899;
+  --color-brand-orange-100: #FFD5C2;
+  --color-brand-orange-50:  #FFF1EC;
+
+  /* --- Primary Colors: Brand Grey --- */
+  --color-brand-gray-900: #3A3B46;
+  --color-brand-gray-700: #5B5D6F;
+  --color-brand-gray-500: #7B7E8F;
+  --color-brand-gray-300: #AEB1C3;
+  --color-brand-gray-100: #DCDFED;
+  --color-brand-gray-50:  #F4F5F8; 
+
+  /* --- Secondary Colors --- */
+  --color-brand-yellow-500: #FFCA62;
+  --color-brand-yellow-50:  #FFF5EC;
+
+  --color-brand-blue-500:   #76D0FC;
+  --color-brand-blue-50:    #ECFBFF;
+
+  --color-brand-green-500:  #1CCD83;
+  --color-brand-green-50:   #E7FDF4;
+
+  --color-brand-pink-500:   #FA8AC0;
+  --color-brand-pink-50:    #FFF0F1;
+
+  --color-brand-red-500:    #EA1010;
+  
+  --color-brand-black:      #000000;
+  --color-brand-white:      #FFFFFF;
+}
+
+/* 4. สร้างคลาส Typography ตาม Figma */
+@utility display {
+  font-size: 88px;
+  line-height: 96px;
+  font-weight: 900; /* Black */
+}
+
+@utility headline-1 {
+  font-size: 56px;
+  line-height: 64px;
+  font-weight: 700; /* Bold */
+}
+
+@utility headline-2 {
+  font-size: 36px;
+  line-height: 44px;
+  font-weight: 700; /* Bold */
+}
+
+@utility headline-3 {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 700; /* Bold */
+}
+
+@utility headline-4 {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 700; /* Bold */
+}
+
+@utility body-1 {
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 500; /* Medium */
+}
+
+@utility body-2 {
+  font-size: 16px;
+  line-height: 28px;
+  font-weight: 500; /* Medium */
+}
+
+@utility body-3 {
+  font-size: 14px;
+  line-height: 24px;
+  font-weight: 500; /* Medium */
+}
+
+/* 5. ตั้งค่า Base สไตล์ของทั้งเว็บไซต์ */
+@layer base {
+  body {
+    @apply font-sans bg-brand-white; 
+  }
+}
+
+/* Leaflet: custom draggable paw marker (no default broken icon) */
+.sitter-map-paw-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.sitter-map-paw-pin {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background-color: var(--color-brand-orange-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.18);
+  color: var(--color-brand-white);
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+/* Leaflet: custom draggable pin marker (use design system PinSelection assets) */
+.sitter-map-pin-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.sitter-map-pin-img {
+  width: 3.5rem; /* 56px */
+  height: auto;
+  display: block;
+  pointer-events: none; /* let Leaflet handle drag/click */
+}

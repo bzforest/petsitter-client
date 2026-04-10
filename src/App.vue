@@ -1,7 +1,9 @@
+<script setup lang="ts">
+import { RouterView } from "vue-router";
+import Toast from "@/components/ui/Toast.vue";
+</script>
+
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-gray-100">
-    <h1 class="text-4xl font-bold text-blue-600">
-      🚀 Pet Sitter App Ready!
-    </h1>
-  </div>
+  <RouterView />
+  <Toast />
 </template>
