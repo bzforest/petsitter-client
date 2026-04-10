@@ -133,6 +133,7 @@ const formatTime = (timeStr: string) => {
               </h3>
             </div>
             <button
+              @click="router.push(`/sitter/${booking.sitterProfileId}`)"
               class="flex items-center gap-2 text-brand-orange-500 font-bold hover:underline cursor-pointer"
             >
               <MapPin class="w-5 h-5" />

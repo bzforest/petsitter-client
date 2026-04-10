@@ -217,7 +217,7 @@ async function handleSubmit() {
         <button
           type="button"
           :class="[
-            'flex-1 py-2 rounded-full text-base font-bold transition-all duration-400',
+            'flex-1 py-2 rounded-full text-base font-bold transition-all duration-400 cursor-pointer',
             selectedRole === 'USER'
               ? 'bg-brand-white text-brand-orange-700 shadow-sm'
               : 'text-brand-gray-500 hover:text-brand-gray-700',
@@ -229,7 +229,7 @@ async function handleSubmit() {
         <button
           type="button"
           :class="[
-            'flex-1 py-2 rounded-full text-base font-bold transition-all duration-400',
+            'flex-1 py-2 rounded-full text-base font-bold transition-all duration-400 cursor-pointer',
             selectedRole === 'SITTER'
               ? 'bg-brand-white text-brand-orange-700 shadow-sm'
               : 'text-brand-gray-500 hover:text-brand-gray-700',
@@ -307,7 +307,7 @@ async function handleSubmit() {
             />
             <button
               type="button"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
               @click="showPassword = !showPassword"
               :aria-label="showPassword ? 'Hide password' : 'Show password'"
             >
@@ -360,7 +360,7 @@ async function handleSubmit() {
         <button
           type="submit"
           :disabled="isLoading"
-          class="w-full py-3.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-full transition-colors text-sm mt-2 flex items-center justify-center gap-2"
+          class="w-full py-3.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-full transition-colors text-sm mt-2 flex items-center justify-center gap-2 cursor-pointer"
         >
           <div
             v-if="isLoading"
@@ -384,7 +384,7 @@ async function handleSubmit() {
         <div class="flex w-full gap-4">
           <button
             type="button"
-            class="flex flex-1 items-center justify-center gap-2 rounded-full bg-brand-gray-50 py-3 px-4 text-sm font-semibold text-brand-gray-900 transition-colors hover:bg-brand-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange-700"
+            class="flex flex-1 items-center justify-center gap-2 rounded-full bg-brand-gray-50 py-3 px-4 text-sm font-semibold text-brand-gray-900 transition-colors hover:bg-brand-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange-700 cursor-pointer"
           >
             <svg
               class="h-5 w-5 shrink-0"
@@ -403,7 +403,7 @@ async function handleSubmit() {
             type="button"
             @click="handleGoogleRegister"
             :disabled="isGoogleLoading || isLoading"
-            class="flex flex-1 items-center justify-center gap-2 rounded-full bg-brand-gray-50 py-3 px-4 text-sm font-semibold text-brand-gray-900 transition-colors hover:bg-brand-gray-100 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange-700"
+            class="flex flex-1 items-center justify-center gap-2 rounded-full bg-brand-gray-50 py-3 px-4 text-sm font-semibold text-brand-gray-900 transition-colors hover:bg-brand-gray-100 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange-700 cursor-pointer"
           >
             <svg
               v-if="!isGoogleLoading"

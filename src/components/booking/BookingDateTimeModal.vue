@@ -61,12 +61,15 @@ const filteredTimeOptions = computed(() => {
   if (date.value !== minDate) return timeOptions
 
   const now = new Date()
-  const currentHour = now.getHours()
-  const currentMinute = now.getMinutes()
+  // Add 1 hour buffer to current time
+  const bufferTime = new Date(now.getTime() + 60 * 60 * 1000)
+  const bufferHour = bufferTime.getHours()
+  const bufferMinute = bufferTime.getMinutes()
 
   return timeOptions.filter((opt) => {
     const [h, m] = opt.value.split(':').map(Number)
-    return h > currentHour || (h === currentHour && m > currentMinute)
+    // Show only times that are at least 1 hour from now
+    return h > bufferHour || (h === bufferHour && m >= bufferMinute)
   })
 })
 

@@ -110,7 +110,7 @@ const goToMessages = () => {
           >
             Login
           </RouterLink>
-          <Button variant="primary" as="link" to="/find-sitter"
+          <Button variant="primary" class="cursor-pointer" as="link" to="/find-sitter"
             >Find A Pet Sitter</Button
           >
         </template>
@@ -123,7 +123,7 @@ const goToMessages = () => {
               class="w-12 h-12 rounded-full flex items-center justify-center bg-brand-gray-50 hover:bg-brand-gray-100 transition"
             >
               <IconBell
-                class="text-brand-gray-300 hover:text-brand-black transition"
+                class="text-brand-gray-300 hover:text-brand-black transition cursor-pointer"
               />
             </button>
             <!-- Chat -->
@@ -131,7 +131,7 @@ const goToMessages = () => {
               @click="goToMessages"
               class="w-12 h-12 rounded-full flex items-center justify-center bg-brand-gray-50 hover:bg-brand-gray-100 transition"
             >
-              <Chat class="text-brand-gray-300 hover:text-black transition" />
+              <Chat class="text-brand-gray-300 hover:text-black transition cursor-pointer" />
             </button>
 
             <!-- Avatar + Dropdown -->
@@ -143,7 +143,7 @@ const goToMessages = () => {
                 <img
                   :src="profileImage"
                   alt="User Profile"
-                  class="w-full h-full object-cover"
+                  class="w-full h-full object-cover cursor-pointer"
                 />
               </button>
 
@@ -189,7 +189,7 @@ const goToMessages = () => {
 
                   <button
                     @click="handleLogout"
-                    class="flex items-center gap-3 px-5 py-3 body-2 text-brand-black hover:text-brand-gray-500 transition"
+                    class="flex items-center gap-3 px-5 py-3 body-2 text-brand-black hover:text-brand-gray-500 transition cursor-pointer"
                   >
                     <Logout />
                     Log out
@@ -200,7 +200,7 @@ const goToMessages = () => {
           </div>
 
           <!-- Find A Pet Sitter -->
-          <Button variant="primary" as="link" to="/find-sitter"
+          <Button variant="primary" as="link" to="/find-sitter" class="cursor-pointer"
             >Find A Pet Sitter</Button
           >
         </template>
@@ -279,7 +279,7 @@ const goToMessages = () => {
           to="/find-sitter"
           class="w-full"
         >
-          <Button variant="primary" class="w-full">Find A Pet Sitter</Button>
+          <Button variant="primary" class="w-full cursor-pointer">Find A Pet Sitter</Button>
         </RouterLink>
       </div>
     </Transition>
