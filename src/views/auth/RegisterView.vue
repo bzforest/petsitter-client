@@ -192,7 +192,7 @@ async function handleSubmit() {
       src="@/assets/Element Design/yellowpaw.svg"
       alt=""
       aria-hidden="true"
-      class="absolute top-10 -right-3 w-60 pointer-events-none select-none"
+      class="absolute top-10 -right-3 hidden sm:block w-60 pointer-events-none select-none"
     />
 
     <!-- Green asterisk — bottom-left corner, partially off-screen -->
@@ -200,7 +200,7 @@ async function handleSubmit() {
       src="@/assets/Element Design/greenasterisk.svg"
       alt=""
       aria-hidden="true"
-      class="absolute -bottom-3 left-0 w-60 pointer-events-none select-none"
+      class="absolute -bottom-3 left-0 hidden sm:block w-60 pointer-events-none select-none"
     />
 
     <div class="w-full max-w-md bg-brand-white p-8">

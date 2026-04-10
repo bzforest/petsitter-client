@@ -1,5 +1,27 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 import Button from '@/components/ui/Button.vue';
+
+const router = useRouter();
+const authStore = useAuthStore();
+
+const showConfirm = ref(false);
+
+async function handleBecomeSitter() {
+  if (!authStore.isLoggedIn) {
+    router.push('/register');
+    return;
+  }
+  showConfirm.value = true;
+}
+
+async function confirmLogoutAndRegister() {
+  showConfirm.value = false;
+  await authStore.logout();
+  router.push('/register');
+}
 import imgInfoCat from '@/assets/home/info-cat-1.png';
 import ImgConnect from '@/assets/home/connect.png';
 import ImgBetter from '@/assets/home/better.png';
@@ -91,8 +113,8 @@ const services = [
         </h1>
         
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
-          <Button variant="secondary" class="w-full sm:w-auto cursor-pointer">Become A Pet Sitter</Button>
-          <Button variant="primary" class="w-full sm:w-auto cursor-pointer">Find A Pet Sitter</Button>
+          <Button variant="secondary" class="w-full sm:w-auto cursor-pointer" @click="handleBecomeSitter">Become A Pet Sitter</Button>
+          <Button variant="primary" class="w-full sm:w-auto cursor-pointer" @click="router.push('/Search')">Find A Pet Sitter</Button>
         </div>
         
       </div>
@@ -104,4 +126,35 @@ const services = [
     </div>
 
   </div>
+
+  <!-- Confirmation Modal -->
+  <Teleport to="body">
+    <Transition enter-from-class="opacity-0" enter-active-class="transition duration-150" leave-to-class="opacity-0" leave-active-class="transition duration-150">
+      <div v-if="showConfirm" class="fixed inset-0 z-50 flex items-center justify-center px-4">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showConfirm = false" />
+        <div class="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 z-10">
+          <h2 class="text-lg font-bold text-gray-900 mb-2">ต้องการเป็น Pet Sitter?</h2>
+          <p class="text-sm text-gray-500 mb-6">
+            ระบบจะทำการ logout บัญชีปัจจุบันของคุณ แล้วพาไปหน้าสมัครสมาชิกใหม่ในฐานะ Sitter
+          </p>
+          <div class="flex gap-3">
+            <button
+              type="button"
+              @click="showConfirm = false"
+              class="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
+            >
+              ยกเลิก
+            </button>
+            <button
+              type="button"
+              @click="confirmLogoutAndRegister"
+              class="flex-1 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold transition-colors cursor-pointer"
+            >
+              Logout &amp; สมัครใหม่
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
