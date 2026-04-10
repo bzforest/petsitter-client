@@ -53,10 +53,10 @@ const formatDate = (dateStr: string) =>
   new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 
 const statusStyle: Record<string, { dot: string; text: string; label: string }> = {
-  NEW_REPORT: { dot: 'bg-pink-400',   text: 'text-pink-500',  label: 'New Report' },
-  PENDING:    { dot: 'bg-teal-400',   text: 'text-teal-500',  label: 'Pending'    },
-  RESOLVED:   { dot: 'bg-green-500',  text: 'text-green-600', label: 'Resolved'   },
-  CANCELLED:  { dot: 'bg-red-500',    text: 'text-red-600',   label: 'Canceled'   },
+  NEW_REPORT: { dot: 'bg-pink-400', text: 'text-pink-500', label: 'New Report' },
+  PENDING: { dot: 'bg-teal-400', text: 'text-teal-500', label: 'Pending' },
+  RESOLVED: { dot: 'bg-green-500', text: 'text-green-600', label: 'Resolved' },
+  CANCELLED: { dot: 'bg-red-500', text: 'text-red-600', label: 'Canceled' },
 }
 
 const getStatusStyle = (status: string) =>
@@ -65,27 +65,40 @@ const getStatusStyle = (status: string) =>
 
 <template>
   <div class="flex flex-col gap-5 h-full">
-
     <!-- Page header -->
     <div class="flex items-center justify-between gap-4 flex-wrap">
       <h1 class="text-2xl font-bold text-gray-900">Report</h1>
 
-      <!-- Status filter -->
-      <select
-        v-model="selectedStatus"
-        class="px-4 py-2 rounded-xl border border-gray-200 bg-white text-sm text-gray-700 outline-none focus:border-brand-orange-700 cursor-pointer"
-      >
-        <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">
-          {{ opt.label }}
-        </option>
-      </select>
+      <!-- Status filter (same pattern as SitterSearchBar) -->
+      <div class="flex items-center gap-3 flex-wrap">
+        <div class="relative">
+          <select
+            v-model="selectedStatus"
+            class="appearance-none pl-3 pr-8 py-2 body-3 border border-brand-gray-100 rounded-lg bg-brand-white text-brand-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-orange-700/30 focus:border-brand-orange-700 transition cursor-pointer"
+          >
+            <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">
+              {{ opt.label }}
+            </option>
+          </select>
+          <svg
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-gray-400 pointer-events-none"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </div>
+      </div>
     </div>
 
     <!-- Table card -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-
+    <div
+      class="bg-white rounded-2xl shadow-sm mt-5 border border-gray-100 overflow-hidden flex flex-col"
+    >
       <!-- Loading -->
-      <div v-if="isLoading" class="flex items-center justify-center py-20">
+      <div v-if="isLoading" class="flex-1 flex items-center justify-center py-20">
         <div class="flex flex-col items-center gap-3 text-gray-400">
           <svg class="w-8 h-8 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
@@ -96,7 +109,7 @@ const getStatusStyle = (status: string) =>
       </div>
 
       <!-- Error -->
-      <div v-else-if="errorMessage" class="flex items-center justify-center py-20">
+      <div v-else-if="errorMessage" class="flex-1 flex items-center justify-center py-20">
         <div class="text-center">
           <p class="text-red-500 text-sm mb-3">{{ errorMessage }}</p>
           <button
@@ -110,7 +123,9 @@ const getStatusStyle = (status: string) =>
 
       <template v-else>
         <!-- Table header -->
-        <div class="grid grid-cols-[2fr_2fr_3fr_2fr_1.5fr] bg-brand-black text-white text-sm font-medium">
+        <div
+          class="grid grid-cols-[2fr_2fr_3fr_2fr_1.5fr] bg-brand-black text-white body-3 font-medium"
+        >
           <div class="px-5 py-3.5">User</div>
           <div class="px-5 py-3.5">Reported Person</div>
           <div class="px-5 py-3.5">Issue</div>
@@ -119,24 +134,46 @@ const getStatusStyle = (status: string) =>
         </div>
 
         <!-- Empty -->
-        <div v-if="reports.length === 0" class="flex items-center justify-center py-16 text-gray-400 text-sm">
+        <div
+          v-if="reports.length === 0"
+          class="flex-1 flex items-center justify-center py-16 text-brand-gray-500 body-3"
+        >
           No reports found.
         </div>
 
         <!-- Rows -->
-        <div v-else class="divide-y divide-gray-100">
+        <div v-else class="overflow-auto divide-y divide-brand-gray-100">
           <div
             v-for="report in reports"
             :key="report.id"
-            class="grid grid-cols-[2fr_2fr_3fr_2fr_1.5fr] items-center hover:bg-gray-50 cursor-pointer transition"
+            class="grid grid-cols-[2fr_2fr_3fr_2fr_1.5fr] items-center hover:bg-orange-50/60 transition-colors cursor-pointer"
             @click="router.push(`/admin/reports/${report.id}`)"
           >
-            <div class="px-5 py-4 text-sm text-gray-800 truncate">{{ report.reporterName ?? '—' }}</div>
-            <div class="px-5 py-4 text-sm text-gray-800 truncate">{{ report.reportedSitterName ?? '—' }}</div>
-            <div class="px-5 py-4 text-sm text-gray-800 truncate">{{ report.issue }}</div>
-            <div class="px-5 py-4 text-sm text-gray-500">{{ formatDate(report.createdAt) }}</div>
-            <div class="px-5 py-4">
-              <span class="inline-flex items-center gap-1.5 text-sm font-medium" :class="getStatusStyle(report.status).text">
+            <div class="px-5 py-3.5 min-w-0">
+              <span class="body-2 font-medium text-brand-black truncate block">
+                {{ report.reporterName ?? '—' }}
+              </span>
+            </div>
+            <div class="px-5 py-3.5 min-w-0">
+              <span class="body-2 font-medium text-brand-black truncate block">
+                {{ report.reportedSitterName ?? '—' }}
+              </span>
+            </div>
+            <div class="px-5 py-3.5 min-w-0">
+              <span class="body-2 font-medium text-brand-black truncate block">
+                {{ report.issue }}
+              </span>
+            </div>
+            <div class="px-5 py-3.5 min-w-0">
+              <span class="body-2 font-medium text-brand-gray-500 truncate block">
+                {{ formatDate(report.createdAt) }}
+              </span>
+            </div>
+            <div class="px-5 py-3.5">
+              <span
+                class="inline-flex items-center gap-1.5 body-2 font-medium"
+                :class="getStatusStyle(report.status).text"
+              >
                 <span class="w-2 h-2 rounded-full shrink-0" :class="getStatusStyle(report.status).dot"></span>
                 {{ getStatusStyle(report.status).label }}
               </span>
@@ -145,8 +182,15 @@ const getStatusStyle = (status: string) =>
         </div>
 
         <!-- Pagination -->
-        <div v-if="totalPages > 1" class="px-5 py-4 border-t border-gray-100 flex justify-center">
-          <PaginationField :total-pages="totalPages" :current-page="currentPage" @update:current-page="fetchReports" />
+        <div
+          v-if="totalPages > 1"
+          class="px-5 py-4 border-t border-gray-100 flex items-center justify-center"
+        >
+          <PaginationField
+            :total-pages="totalPages"
+            :current-page="currentPage"
+            @update:current-page="fetchReports"
+          />
         </div>
       </template>
     </div>
